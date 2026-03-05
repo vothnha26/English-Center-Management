@@ -1,4 +1,4 @@
-package com.trungtamdaotao.model.service.system;
+package com.trungtamdaotao.model.service.system.teacher;
 
 import com.trungtamdaotao.model.dao.system.ITeacherDAO;
 import com.trungtamdaotao.model.entity.core.Teacher;
@@ -14,8 +14,33 @@ public class TeacherService {
         this.teacherDAO = teacherDAO;
     }
 
+    // CREATE & UPDATE
+    public void saveOrUpdate(Teacher teacher) {
+        teacherDAO.save(teacher);
+    }
+
+    // DELETE
+    public void deleteTeacher(Long id) {
+        teacherDAO.delete(id);
+    }
+
+    // READ ALL
+    public List<Teacher> getAllTeachers() {
+        return teacherDAO.findAll();
+    }
+
+    // TRA CỨU ĐA NĂNG (Họ tên, Email, Chuyên môn)
+    public List<Teacher> searchTeachers(String keyword) {
+        String lowerKey = keyword.toLowerCase();
+        return teacherDAO.findAll().stream()
+                .filter(t -> t.getFullName().toLowerCase().contains(lowerKey)
+                        || t.getEmail().toLowerCase().contains(lowerKey)
+                        || t.getSpecialty().toLowerCase().contains(lowerKey))
+                .toList();
+    }
+
     /**
-     * Lambda 4: Lọc giáo viên theo chuyên môn (IELTS, TOEIC...) sử dụng hàm DAO đặc thù
+     * Lọc giáo viên theo chuyên môn (IELTS, TOEIC...)
      */
     public List<Teacher> getTeachersBySpecialty(String specialty) {
         return teacherDAO.findBySpecialty(specialty).stream()
@@ -24,7 +49,7 @@ public class TeacherService {
     }
 
     /**
-     * Lambda 5: Thống kê số lượng giáo viên theo từng chuyên môn (Grouping)
+     * Thống kê số lượng giáo viên theo từng chuyên môn (Grouping)
      */
     public Map<String, Long> getTeacherStatsBySpecialty() {
         return teacherDAO.findAll().stream()
@@ -32,7 +57,7 @@ public class TeacherService {
     }
 
     /**
-     * Lambda 6: Lấy danh sách Email của các giáo viên để gửi thông báo hệ thống
+     * Lấy danh sách Email của các giáo viên để gửi thông báo hệ thống
      */
     public List<String> getTeacherEmails() {
         return teacherDAO.findAll().stream()

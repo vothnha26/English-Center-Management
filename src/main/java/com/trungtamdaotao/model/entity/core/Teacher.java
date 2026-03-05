@@ -26,11 +26,16 @@ public class Teacher {
     private LocalDate hireDate;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "status", length = 20)
     private Status status = Status.Active;
 
     // Getters and Setters
     public Long getTeacher_id() {
         return teacher_id;
+    }
+
+    public void setTeacher_id(Long teacher_id) {
+        this.teacher_id = teacher_id;
     }
 
     public String getFullName() {
