@@ -5,4 +5,5 @@ import com.trungtamdaotao.model.entity.system.UserAccount;
 
 public interface IUserAccountDAO extends IGenericDAO<UserAccount> {
 
+    UserAccount findByUsername(String username);
 }
