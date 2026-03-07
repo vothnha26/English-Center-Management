@@ -11,10 +11,10 @@ import com.trungtamdaotao.util.TokenGenerator;
 
 import java.util.function.Consumer;
 
-public class AccountManagementService {
+public class AccountProvisionService {
     private final IUserAccountDAO accountDAO;
 
-    public AccountManagementService(IUserAccountDAO accountDAO) {
+    public AccountProvisionService(IUserAccountDAO accountDAO) {
         this.accountDAO = accountDAO;
     }
 

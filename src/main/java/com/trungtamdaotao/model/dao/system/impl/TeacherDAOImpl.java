@@ -1,4 +1,4 @@
-package com.trungtamdaotao.model.dao.impl;
+package com.trungtamdaotao.model.dao.system.impl;
 
 import com.trungtamdaotao.model.dao.AbstractDAO;
 import com.trungtamdaotao.model.dao.system.ITeacherDAO;
