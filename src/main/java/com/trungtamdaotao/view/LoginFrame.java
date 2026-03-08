@@ -8,6 +8,7 @@ public class LoginFrame extends JFrame {
     private JPasswordField txtPassword;
     private JButton btnLogin;
     private JButton btnForgot;
+    private JButton btnActivate;
 
     public LoginFrame() {
         initComponents();
@@ -58,6 +59,15 @@ public class LoginFrame extends JFrame {
         btnForgot.setCursor(new Cursor(Cursor.HAND_CURSOR));
         gbc.gridy = 4;
         add(btnForgot, gbc);
+
+        // Nút Kích hoạt tài khoản
+        JButton btnActivate = new JButton("Kích hoạt tài khoản");
+        btnActivate.setBorderPainted(false);
+        btnActivate.setContentAreaFilled(false);
+        btnActivate.setForeground(Color.BLUE);
+        btnActivate.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        gbc.gridy = 5;
+        add(btnActivate, gbc);
     }
 
     // Getters để Controller có thể truy cập dữ liệu (Encapsulation)
@@ -65,4 +75,5 @@ public class LoginFrame extends JFrame {
     public JPasswordField getTxtPassword() { return txtPassword; }
     public JButton getBtnLogin() { return btnLogin; }
     public JButton getBtnForgot() { return btnForgot; }
+    public JButton getBtnActivate() { return btnActivate; }
 }

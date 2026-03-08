@@ -1,4 +1,4 @@
-package com.trungtamdaotao.model.dao.system.impl;
+package com.trungtamdaotao.model.dao.impl;
 
 import com.trungtamdaotao.model.dao.AbstractDAO;
 import com.trungtamdaotao.model.dao.system.IUserAccountDAO;
@@ -14,7 +14,6 @@ public class UserAccountDAOImpl extends AbstractDAO<UserAccount> implements IUse
 
     @Override
     public UserAccount findByUsername(String username) {
-        // Lấy factory từ DbManager của Nhã
         EntityManager em = DbManager.getFactory().createEntityManager();
         try {
             String jpql = "SELECT u FROM UserAccount u WHERE u.username = :user";

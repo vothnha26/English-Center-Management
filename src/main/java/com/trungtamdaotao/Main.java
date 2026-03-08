@@ -2,7 +2,7 @@ package com.trungtamdaotao;
 
 import com.trungtamdaotao.controller.system.LoginController;
 import com.trungtamdaotao.model.dao.system.IUserAccountDAO;
-import com.trungtamdaotao.model.dao.system.impl.UserAccountDAOImpl;
+import com.trungtamdaotao.model.dao.impl.UserAccountDAOImpl;
 import com.trungtamdaotao.model.service.common.IMailService;
 import com.trungtamdaotao.model.service.common.RealMailServiceImpl;
 import com.trungtamdaotao.model.service.system.account.AuthService;
@@ -21,7 +21,7 @@ public class Main {
         LoginFrame loginFrame = new LoginFrame();
 
         // 4. Khởi tạo Controller để "kết nối" View và Service
-//        new LoginController(loginFrame, authService);
+        new LoginController(loginFrame, authService);
 
         // 5. Hiển thị
         loginFrame.setVisible(true);

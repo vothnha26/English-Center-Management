@@ -1,7 +1,7 @@
 package com.trungtamdaotao.controller.system;
 
-import com.trungtamdaotao.model.dao.system.impl.TeacherDAOImpl;
-import com.trungtamdaotao.model.dao.system.impl.UserAccountDAOImpl;
+import com.trungtamdaotao.model.dao.impl.TeacherDAOImpl;
+import com.trungtamdaotao.model.dao.impl.UserAccountDAOImpl;
 import com.trungtamdaotao.model.entity.core.Teacher;
 import com.trungtamdaotao.model.entity.enums.Status;
 import com.trungtamdaotao.model.service.system.teacher.TeacherManagementService;
