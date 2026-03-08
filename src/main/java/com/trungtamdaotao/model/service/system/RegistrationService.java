@@ -12,6 +12,7 @@ import com.trungtamdaotao.model.entity.system.Staff;
 import com.trungtamdaotao.model.entity.system.Token;
 import com.trungtamdaotao.model.entity.system.UserAccount;
 import com.trungtamdaotao.model.service.system.account.AccountService;
+import com.trungtamdaotao.util.DbManager;
 import com.trungtamdaotao.util.EmailConfig;
 
 import java.security.MessageDigest;
@@ -76,6 +77,28 @@ public class RegistrationService {
     private String generateOTP() {
         // Simple 6-digit OTP
         return String.valueOf((int)(Math.random() * 900000) + 100000);
+    }
+
+    public void resendVerification(String email) throws Exception {
+        UserAccount account = accountService.findByUsername(email);
+        if (account == null) {
+            throw new Exception("Account not found");
+        }
+        if (account.isIs_active()) {
+            throw new Exception("Account already active");
+        }
+
+        // Create new EMAIL_VERIFICATION token
+        Token token = tokenService.generateToken(account, TokenType.EMAIL_VERIFICATION, 1440);
+        // Update password to new token
+        String hashedToken = hashPassword(token.getToken_value());
+        account.setPassword_hash(hashedToken);
+        accountService.updateAccount(account);
+
+        // Send email
+        String subject = "Email Verification";
+        String body = "Your verification token is: " + token.getToken_value();
+        emailService.sendEmail(email, subject, body);
     }
 
     private String hashPassword(String password) throws NoSuchAlgorithmException {

@@ -47,4 +47,8 @@ public class StaffController {
     public void deleteStaff(Long id) {
         staffService.deactivateStaff(id);
     }
+
+    public void resendVerification(String email) throws Exception {
+        staffService.resendVerification(email);
+    }
 }

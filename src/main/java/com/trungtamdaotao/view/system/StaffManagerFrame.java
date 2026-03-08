@@ -279,14 +279,9 @@ public class StaffManagerFrame extends JFrame {
             return;
         }
         try {
-            var account = accountService.findByUsername(txtEmail.getText());
-            if (account != null) {
-                // Gửi lại email verify
-                registrationService.registerUser(account.getUsername(), txtEmail.getText(), account.getRole(), account.getTeacher(), account.getStudent(), account.getStaff());
-                JOptionPane.showMessageDialog(this, "Email xác thực đã gửi.");
-            } else {
-                JOptionPane.showMessageDialog(this, "Không tìm thấy account.");
-            }
+            controller.resendVerification(txtEmail.getText());
+            JOptionPane.showMessageDialog(this, "Email xác thực đã gửi.");
+            loadTable(controller.getAllStaff());
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this, ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
         }

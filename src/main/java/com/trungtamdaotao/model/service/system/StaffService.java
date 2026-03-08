@@ -8,6 +8,7 @@ import com.trungtamdaotao.model.entity.enums.AccountRole;
 import com.trungtamdaotao.model.entity.enums.StaffRole;
 import com.trungtamdaotao.model.entity.enums.Status;
 import com.trungtamdaotao.model.entity.system.Staff;
+import com.trungtamdaotao.model.entity.system.UserAccount;
 
 public class StaffService {
 
@@ -91,5 +92,9 @@ public class StaffService {
         if (s == null) throw new IllegalArgumentException("Không tìm thấy staff id=" + id);
         s.setStatus(Status.Inactive);
         staffDAO.update(s);
+    }
+
+    public void resendVerification(String email) throws Exception {
+        registrationService.resendVerification(email);
     }
 }

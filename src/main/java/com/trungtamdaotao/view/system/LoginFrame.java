@@ -46,13 +46,22 @@ public class LoginFrame extends JFrame {
 
         JPanel btnPanel = new JPanel(new FlowLayout());
         btnLogin = new JButton("Đăng nhập");
+        JButton btnForgot = new JButton("Quên mật khẩu");
         btnLogin.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 doLogin();
             }
         });
+        btnForgot.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                new ForgotPasswordFrame().setVisible(true);
+                dispose();
+            }
+        });
         btnPanel.add(btnLogin);
+        btnPanel.add(btnForgot);
         add(btnPanel, BorderLayout.SOUTH);
     }
 
