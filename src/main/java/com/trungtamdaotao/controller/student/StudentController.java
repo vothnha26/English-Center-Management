@@ -43,7 +43,7 @@ public class StudentController {
     }
 
     public void addStudent(String fullName, String phone, String email,
-                           String address, LocalDate dob) {
+                           String address, LocalDate dob) throws Exception {
         studentService.addStudent(fullName, phone, email, address, dob);
     }
 

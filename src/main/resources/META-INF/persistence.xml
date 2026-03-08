@@ -8,6 +8,7 @@
         <!-- System entities -->
         <class>com.trungtamdaotao.model.entity.system.Staff</class>
         <class>com.trungtamdaotao.model.entity.system.UserAccount</class>
+        <class>com.trungtamdaotao.model.entity.system.Token</class>
         <class>com.trungtamdaotao.model.entity.system.Notification</class>
 
         <!-- Core entities -->
@@ -43,7 +44,7 @@
             <property name="hibernate.dialect"      value="org.hibernate.dialect.MySQLDialect"/>
             <property name="hibernate.show_sql"     value="true"/>
             <property name="hibernate.format_sql"   value="true"/>
-            <!-- update: tự tạo/cập nhật bảng, dùng create-drop khi test lần đầu -->
+            <!-- update: tự cập nhật bảng (sau khi tạo lần đầu với create) -->
             <property name="hibernate.hbm2ddl.auto" value="update"/>
         </properties>
     </persistence-unit>

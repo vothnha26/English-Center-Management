@@ -35,7 +35,7 @@ public class StaffController {
         return staffService.findById(id);
     }
 
-    public void addStaff(String fullName, StaffRole role, String phone, String email) {
+    public void addStaff(String fullName, StaffRole role, String phone, String email) throws Exception {
         staffService.addStaff(fullName, role, phone, email);
     }
 

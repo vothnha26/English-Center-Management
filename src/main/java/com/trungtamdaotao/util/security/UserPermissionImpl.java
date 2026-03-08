@@ -14,7 +14,7 @@ public class UserPermissionImpl implements IPermission {
     @Override
     public boolean canManageSystem() {
         // Chỉ Admin thực thụ mới được quản lý hệ thống
-        return user.getRole() == AccountRole.Admin;
+        return user.getRole() == AccountRole.ADMIN;
     }
 
     @Override

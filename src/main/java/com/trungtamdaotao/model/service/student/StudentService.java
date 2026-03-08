@@ -6,14 +6,23 @@ import java.util.stream.Collectors;
 
 import com.trungtamdaotao.model.dao.student.IStudentDAO;
 import com.trungtamdaotao.model.entity.core.Student;
+import com.trungtamdaotao.model.entity.enums.AccountRole;
 import com.trungtamdaotao.model.entity.enums.Status;
+import com.trungtamdaotao.model.service.system.RegistrationService;
 
 public class StudentService {
 
     private final IStudentDAO studentDAO;
+    private final RegistrationService registrationService;
 
     public StudentService(IStudentDAO studentDAO) {
         this.studentDAO = studentDAO;
+        this.registrationService = new RegistrationService();
+    }
+
+    public StudentService(IStudentDAO studentDAO, RegistrationService registrationService) {
+        this.studentDAO = studentDAO;
+        this.registrationService = registrationService;
     }
 
     // ─── READ ──────────────────────────────────────────────────────────────────
@@ -46,7 +55,7 @@ public class StudentService {
      * @throws IllegalArgumentException nếu thiếu họ tên hoặc số điện thoại
      */
     public void addStudent(String fullName, String phone, String email,
-                           String address, LocalDate dob) {
+                           String address, LocalDate dob) throws Exception {
         if (fullName == null || fullName.isBlank())
             throw new IllegalArgumentException("Họ tên không được để trống.");
         if (phone == null || phone.isBlank())
@@ -59,7 +68,13 @@ public class StudentService {
         s.setAddress(address);
         s.setDateOfBirth(dob);
         s.setRegistrationDate(LocalDate.now());
+        s.setStatus(Status.Active);
         studentDAO.save(s);
+
+        // Tự động tạo account nếu có email
+        if (email != null && !email.isBlank()) {
+            registrationService.registerUser(email, email, AccountRole.STUDENT, null, s, null);
+        }
     }
 
     // ─── UPDATE ────────────────────────────────────────────────────────────────

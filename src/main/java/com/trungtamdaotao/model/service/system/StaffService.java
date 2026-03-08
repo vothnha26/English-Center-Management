@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.trungtamdaotao.model.dao.system.IStaffDAO;
+import com.trungtamdaotao.model.entity.enums.AccountRole;
 import com.trungtamdaotao.model.entity.enums.StaffRole;
 import com.trungtamdaotao.model.entity.enums.Status;
 import com.trungtamdaotao.model.entity.system.Staff;
@@ -11,9 +12,16 @@ import com.trungtamdaotao.model.entity.system.Staff;
 public class StaffService {
 
     private final IStaffDAO staffDAO;
+    private final RegistrationService registrationService;
 
     public StaffService(IStaffDAO staffDAO) {
         this.staffDAO = staffDAO;
+        this.registrationService = new RegistrationService();
+    }
+
+    public StaffService(IStaffDAO staffDAO, RegistrationService registrationService) {
+        this.staffDAO = staffDAO;
+        this.registrationService = registrationService;
     }
 
     // ─── READ ──────────────────────────────────────────────────────────────────
@@ -45,7 +53,7 @@ public class StaffService {
      * Thêm staff mới.
      * @throws IllegalArgumentException nếu thiếu họ tên hoặc số điện thoại
      */
-    public void addStaff(String fullName, StaffRole role, String phone, String email) {
+    public void addStaff(String fullName, StaffRole role, String phone, String email) throws Exception {
         if (fullName == null || fullName.isBlank())
             throw new IllegalArgumentException("Họ tên không được để trống.");
         if (phone == null || phone.isBlank())
@@ -60,6 +68,12 @@ public class StaffService {
         s.setEmail(email);
         s.setStatus(Status.Active);
         staffDAO.save(s);
+
+        // Tự động tạo account nếu có email
+        if (email != null && !email.isBlank()) {
+            AccountRole accountRole = role == StaffRole.ADMIN ? AccountRole.ADMIN : AccountRole.STAFF;
+            registrationService.registerUser(email, email, accountRole, null, null, s);
+        }
     }
 
     // ─── UPDATE ────────────────────────────────────────────────────────────────

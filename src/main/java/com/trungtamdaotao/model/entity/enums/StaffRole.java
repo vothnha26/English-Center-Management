@@ -1,5 +1,5 @@
 package com.trungtamdaotao.model.entity.enums;
 
 public enum StaffRole {
-    Admin, Consultant, Accountant, Manager, CONSULTANT, Other
+    ADMIN, CONSULTANT, ACCOUNTANT, MANAGER, OTHER
 }

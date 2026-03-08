@@ -36,7 +36,7 @@ public class TeacherController {
     }
 
     public void addTeacher(String fullName, String phone, String email,
-                           String specialty, LocalDate hireDate) {
+                           String specialty, LocalDate hireDate) throws Exception {
         teacherService.addTeacher(fullName, phone, email, specialty, hireDate);
     }
 

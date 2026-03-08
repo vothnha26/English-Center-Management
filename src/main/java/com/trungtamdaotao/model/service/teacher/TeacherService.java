@@ -6,14 +6,23 @@ import java.util.stream.Collectors;
 
 import com.trungtamdaotao.model.dao.teacher.ITeacherDAO;
 import com.trungtamdaotao.model.entity.core.Teacher;
+import com.trungtamdaotao.model.entity.enums.AccountRole;
 import com.trungtamdaotao.model.entity.enums.Status;
+import com.trungtamdaotao.model.service.system.RegistrationService;
 
 public class TeacherService {
 
     private final ITeacherDAO teacherDAO;
+    private final RegistrationService registrationService;
 
     public TeacherService(ITeacherDAO teacherDAO) {
         this.teacherDAO = teacherDAO;
+        this.registrationService = new RegistrationService();
+    }
+
+    public TeacherService(ITeacherDAO teacherDAO, RegistrationService registrationService) {
+        this.teacherDAO = teacherDAO;
+        this.registrationService = registrationService;
     }
 
     // ─── READ ──────────────────────────────────────────────────────────────────
@@ -46,7 +55,7 @@ public class TeacherService {
      * @throws IllegalArgumentException nếu thiếu họ tên hoặc số điện thoại
      */
     public void addTeacher(String fullName, String phone, String email,
-                           String specialty, LocalDate hireDate) {
+                           String specialty, LocalDate hireDate) throws Exception {
         if (fullName == null || fullName.isBlank())
             throw new IllegalArgumentException("Họ tên không được để trống.");
         if (phone == null || phone.isBlank())
@@ -58,7 +67,13 @@ public class TeacherService {
         t.setEmail(email);
         t.setSpecialty(specialty);
         t.setHireDate(hireDate != null ? hireDate : LocalDate.now());
+        t.setStatus(Status.Active);
         teacherDAO.save(t);
+
+        // Tự động tạo account nếu có email
+        if (email != null && !email.isBlank()) {
+            registrationService.registerUser(email, email, AccountRole.TEACHER, t, null, null);
+        }
     }
 
     // ─── UPDATE ────────────────────────────────────────────────────────────────

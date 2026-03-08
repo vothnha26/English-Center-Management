@@ -1,0 +1,83 @@
+package com.trungtamdaotao.model.service.system;
+
+import com.trungtamdaotao.model.dao.impl.AccountDAOImpl;
+import com.trungtamdaotao.model.dao.impl.TokenDAOImpl;
+import com.trungtamdaotao.model.dao.system.IAccountDAO;
+import com.trungtamdaotao.model.dao.system.ITokenDAO;
+import com.trungtamdaotao.model.entity.core.Student;
+import com.trungtamdaotao.model.entity.core.Teacher;
+import com.trungtamdaotao.model.entity.enums.AccountRole;
+import com.trungtamdaotao.model.entity.enums.TokenType;
+import com.trungtamdaotao.model.entity.system.Staff;
+import com.trungtamdaotao.model.entity.system.Token;
+import com.trungtamdaotao.model.entity.system.UserAccount;
+import com.trungtamdaotao.model.service.system.account.AccountService;
+import com.trungtamdaotao.util.EmailConfig;
+
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Base64;
+
+public class RegistrationService {
+
+    private final AccountService accountService;
+    private final TokenService tokenService;
+    private final EmailService emailService;
+
+    public RegistrationService(AccountService accountService, TokenService tokenService, EmailService emailService) {
+        this.accountService = accountService;
+        this.tokenService = tokenService;
+        this.emailService = emailService;
+    }
+
+    /** Constructor mặc định sử dụng thông tin từ .env file và gửi email thực */
+    public RegistrationService() {
+        this(new AccountService(new AccountDAOImpl()),
+             new TokenService(new TokenDAOImpl()),
+             new EmailService(EmailConfig.getSmtpHost(), EmailConfig.getSmtpPort(), 
+                             EmailConfig.getMailUsername(), EmailConfig.getMailPassword(), false));
+    }
+
+    public void registerUser(String username, String email, AccountRole role,
+                             Teacher teacher, Student student, Staff staff) throws Exception {
+        // Check if account already exists
+        UserAccount account = accountService.findByUsername(username);
+
+        if (account == null) {
+            // Generate OTP as temporary password
+            String otp = generateOTP();
+            String passwordHash = hashPassword(otp);
+
+            // Create account with OTP as password
+            account = accountService.createAccount(username, passwordHash, role, teacher, student, staff);
+
+            // Create EMAIL_VERIFICATION token
+            tokenService.generateToken(account, TokenType.EMAIL_VERIFICATION, 1440); // 24 hours expiry
+
+            // Send email with OTP
+            String subject = "Your Temporary Password";
+            String body = "Your temporary password is: " + otp;
+            try {
+                emailService.sendEmail(email, subject, body);
+            } catch (Exception e) {
+                System.err.println("Lỗi gửi email: " + e.getMessage());
+            }
+        } else {
+            // Update existing account with new entity relationships if needed
+            if (teacher != null) account.setTeacher(teacher);
+            if (student != null) account.setStudent(student);
+            if (staff != null) account.setStaff(staff);
+        }
+    }
+
+    private String generateOTP() {
+        // Simple 6-digit OTP
+        return String.valueOf((int)(Math.random() * 900000) + 100000);
+    }
+
+    private String hashPassword(String password) throws NoSuchAlgorithmException {
+        MessageDigest md = MessageDigest.getInstance("SHA-256");
+        byte[] hash = md.digest(password.getBytes());
+        return Base64.getEncoder().encodeToString(hash);
+    }
+}
