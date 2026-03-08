@@ -40,4 +40,18 @@
         </dependency>
     </dependencies>
 
+    <build>
+        <plugins>
+            <!-- Chạy: mvn exec:java -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.1.0</version>
+                <configuration>
+                    <mainClass>com.trungtamdaotao.Main</mainClass>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
 </project>

@@ -1,0 +1,83 @@
+package com.trungtamdaotao.controller.finance;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
+
+import com.trungtamdaotao.model.dao.impl.InvoiceDAOImpl;
+import com.trungtamdaotao.model.dao.impl.PaymentDAOImpl;
+import com.trungtamdaotao.model.entity.core.Student;
+import com.trungtamdaotao.model.entity.enums.InvoiceStatus;
+import com.trungtamdaotao.model.entity.enums.PaymentMethod;
+import com.trungtamdaotao.model.entity.finance.Invoice;
+import com.trungtamdaotao.model.entity.finance.Payment;
+import com.trungtamdaotao.model.service.finance.FinanceReportService;
+import com.trungtamdaotao.model.service.finance.InvoiceService;
+import com.trungtamdaotao.model.service.finance.PaymentService;
+
+public class FinanceController {
+
+    private final InvoiceService invoiceService;
+    private final PaymentService paymentService;
+    private final FinanceReportService reportService;
+
+    public FinanceController() {
+        InvoiceDAOImpl invoiceDAO = new InvoiceDAOImpl();
+        PaymentDAOImpl paymentDAO = new PaymentDAOImpl();
+        invoiceService = new InvoiceService(invoiceDAO);
+        paymentService = new PaymentService(paymentDAO, invoiceDAO);
+        reportService  = new FinanceReportService(paymentDAO);
+    }
+
+    // ─── Hóa đơn ───────────────────────────────────────────────────────────────
+
+    public Invoice createInvoice(Student student, BigDecimal amount, String note) {
+        return invoiceService.createInvoice(student, amount, note);
+    }
+
+    public void cancelInvoice(int invoiceId) {
+        invoiceService.updateStatus(invoiceId, InvoiceStatus.Cancelled);
+    }
+
+    public List<Invoice> getAllInvoices() {
+        return invoiceService.getAll();
+    }
+
+    public List<Invoice> getInvoicesByStudent(Long studentId) {
+        return invoiceService.getByStudent(studentId);
+    }
+
+    public List<Invoice> getUnpaidInvoices() {
+        return invoiceService.getUnpaid();
+    }
+
+    // ─── Thanh toán ────────────────────────────────────────────────────────────
+
+    public void recordPayment(Invoice invoice, BigDecimal amount,
+                              PaymentMethod method, String ref) {
+        paymentService.recordPayment(invoice, amount, method, ref);
+    }
+
+    public List<Payment> getPaymentsByInvoice(Long invoiceId) {
+        return paymentService.getByInvoice(invoiceId);
+    }
+
+    // ─── Báo cáo ───────────────────────────────────────────────────────────────
+
+    public BigDecimal getTotalRevenue() {
+        return reportService.getTotalRevenue();
+    }
+
+    public BigDecimal getRevenueBetween(LocalDateTime from, LocalDateTime to) {
+        return reportService.getRevenueBetween(from, to);
+    }
+
+    public Map<String, BigDecimal> getMonthlyRevenue(int year) {
+        return reportService.getMonthlyRevenue(year);
+    }
+
+    public List<Payment> getAllPayments() {
+        return reportService.getAllPayments();
+    }
+}
