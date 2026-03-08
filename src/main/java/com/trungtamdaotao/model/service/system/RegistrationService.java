@@ -44,19 +44,22 @@ public class RegistrationService {
         UserAccount account = accountService.findByUsername(username);
 
         if (account == null) {
-            // Generate OTP as temporary password
-            String otp = generateOTP();
-            String passwordHash = hashPassword(otp);
+            // Create account with temporary password first
+            String tempPassword = "temp";
+            String tempPasswordHash = hashPassword(tempPassword);
+            account = accountService.createAccount(username, tempPasswordHash, role, teacher, student, staff);
 
-            // Create account with OTP as password
-            account = accountService.createAccount(username, passwordHash, role, teacher, student, staff);
+            // Generate token for email verification
+            Token token = tokenService.generateToken(account, TokenType.EMAIL_VERIFICATION, 15); // 15 minutes expiry
 
-            // Create EMAIL_VERIFICATION token
-            tokenService.generateToken(account, TokenType.EMAIL_VERIFICATION, 1440); // 24 hours expiry
+            // Update account password to hashed token value
+            String tokenPasswordHash = hashPassword(token.getToken_value());
+            account.setPassword_hash(tokenPasswordHash);
+            accountService.updateAccount(account);
 
-            // Send email with OTP
+            // Send email with token as temporary password
             String subject = "Your Temporary Password";
-            String body = "Your temporary password is: " + otp;
+            String body = "Your temporary password is: " + token.getToken_value();
             try {
                 emailService.sendEmail(email, subject, body);
             } catch (Exception e) {

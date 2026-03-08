@@ -35,8 +35,6 @@ public class UserAccount {
 
     private boolean is_active = true;
 
-    private boolean is_first_login = true;
-
     // Getters, Setters
     public Long getUser_id() {
         return user_id;
@@ -100,13 +98,5 @@ public class UserAccount {
 
     public void setIs_active(boolean is_active) {
         this.is_active = is_active;
-    }
-
-    public boolean isIs_first_login() {
-        return is_first_login;
-    }
-
-    public void setIs_first_login(boolean is_first_login) {
-        this.is_first_login = is_first_login;
     }
 }

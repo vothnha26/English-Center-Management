@@ -22,6 +22,9 @@ import javax.swing.table.DefaultTableModel;
 import com.trungtamdaotao.controller.system.StaffController;
 import com.trungtamdaotao.model.entity.enums.StaffRole;
 import com.trungtamdaotao.model.entity.system.Staff;
+import com.trungtamdaotao.model.service.system.account.AccountService;
+import com.trungtamdaotao.model.service.system.RegistrationService;
+import com.trungtamdaotao.model.dao.impl.AccountDAOImpl;
 
 /**
  * Màn hình Quản lý Staff (CRUD).
@@ -30,6 +33,8 @@ import com.trungtamdaotao.model.entity.system.Staff;
 public class StaffManagerFrame extends JFrame {
 
     private final StaffController controller;
+    private final AccountService accountService;
+    private final RegistrationService registrationService;
 
     // Bảng danh sách
     private JTable table;
@@ -43,12 +48,14 @@ public class StaffManagerFrame extends JFrame {
     private JComboBox<StaffRole> cbRole;
 
     // Nút hành động
-    private JButton btnAdd, btnUpdate, btnDelete, btnClear, btnSearch;
+    private JButton btnAdd, btnUpdate, btnDelete, btnClear, btnSearch, btnInactiveAccount, btnSendVerify;
 
     private static final String[] COLUMNS = {"ID", "Họ tên", "Vai trò", "Điện thoại", "Email", "Trạng thái"};
 
     public StaffManagerFrame() {
         this.controller = new StaffController();
+        this.accountService = new AccountService(new AccountDAOImpl());
+        this.registrationService = new RegistrationService();
         initUI();
         loadTable(controller.getAllStaff());
     }
@@ -125,14 +132,19 @@ public class StaffManagerFrame extends JFrame {
         btnUpdate = new JButton("✏ Cập nhật");
         btnDelete = new JButton("🗑 Xóa (Inactive)");
         btnClear  = new JButton("⬜ Xóa form");
+        btnInactiveAccount = new JButton("🚫 Inactive Account");
+        btnSendVerify = new JButton("📧 Send Verify Email");
 
         btnAdd.addActionListener(e    -> doAdd());
         btnUpdate.addActionListener(e -> doUpdate());
         btnDelete.addActionListener(e -> doDelete());
         btnClear.addActionListener(e  -> clearForm());
+        btnInactiveAccount.addActionListener(e -> doInactiveAccount());
+        btnSendVerify.addActionListener(e -> doSendVerify());
 
         btnPanel.add(btnAdd); btnPanel.add(btnUpdate);
         btnPanel.add(btnDelete); btnPanel.add(btnClear);
+        btnPanel.add(btnInactiveAccount); btnPanel.add(btnSendVerify);
 
         wrapper.add(grid, BorderLayout.CENTER);
         wrapper.add(btnPanel, BorderLayout.SOUTH);
@@ -144,13 +156,20 @@ public class StaffManagerFrame extends JFrame {
     private void loadTable(List<Staff> list) {
         tableModel.setRowCount(0);
         for (Staff s : list) {
+            String accountStatus = "No Account";
+            if (s.getEmail() != null && !s.getEmail().isBlank()) {
+                var account = accountService.findByUsername(s.getEmail());
+                if (account != null) {
+                    accountStatus = account.isIs_active() ? "Active" : "Inactive";
+                }
+            }
             tableModel.addRow(new Object[]{
                 s.getStaff_id(),
                 s.getFullName(),
                 s.getRole(),
                 s.getPhone(),
                 s.getEmail(),
-                s.getStatus()
+                accountStatus
             });
         }
     }
@@ -229,6 +248,48 @@ public class StaffManagerFrame extends JFrame {
         txtId.setText(""); txtName.setText(""); txtPhone.setText("");
         txtEmail.setText(""); cbRole.setSelectedIndex(0);
         table.clearSelection();
+    }
+
+    private void doInactiveAccount() {
+        if (txtId.getText().isBlank() || txtEmail.getText().isBlank()) {
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn staff có email.");
+            return;
+        }
+        int confirm = JOptionPane.showConfirmDialog(this,
+                "Account sẽ bị inactive. Tiếp tục?", "Xác nhận", JOptionPane.YES_NO_OPTION);
+        if (confirm != JOptionPane.YES_OPTION) return;
+        try {
+            var account = accountService.findByUsername(txtEmail.getText());
+            if (account != null) {
+                account.setIs_active(false);
+                accountService.updateAccount(account);
+                JOptionPane.showMessageDialog(this, "Account đã inactive.");
+                loadTable(controller.getAllStaff());
+            } else {
+                JOptionPane.showMessageDialog(this, "Không tìm thấy account.");
+            }
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void doSendVerify() {
+        if (txtId.getText().isBlank() || txtEmail.getText().isBlank()) {
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn staff có email.");
+            return;
+        }
+        try {
+            var account = accountService.findByUsername(txtEmail.getText());
+            if (account != null) {
+                // Gửi lại email verify
+                registrationService.registerUser(account.getUsername(), txtEmail.getText(), account.getRole(), account.getTeacher(), account.getStudent(), account.getStaff());
+                JOptionPane.showMessageDialog(this, "Email xác thực đã gửi.");
+            } else {
+                JOptionPane.showMessageDialog(this, "Không tìm thấy account.");
+            }
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     private JLabel label(String text) { return new JLabel(text); }

@@ -19,20 +19,17 @@ public class AccountService {
                                      Teacher teacher, Student student, Staff staff) {
         if (username == null || username.isBlank())
             throw new IllegalArgumentException("Username không được để trống.");
-        if (passwordHash == null || passwordHash.isBlank())
-            throw new IllegalArgumentException("Password hash không được để trống.");
         if (role == null)
             throw new IllegalArgumentException("Role không được để trống.");
 
         UserAccount account = new UserAccount();
         account.setUsername(username);
-        account.setPassword_hash(passwordHash);
+        account.setPassword_hash(passwordHash != null ? passwordHash : "");
         account.setRole(role);
         account.setTeacher(teacher);
         account.setStudent(student);
         account.setStaff(staff);
-        account.setIs_active(true);
-        account.setIs_first_login(true);
+        account.setIs_active(false);
 
         accountDAO.save(account);
         return account;
@@ -48,5 +45,20 @@ public class AccountService {
 
     public void updateAccount(UserAccount account) {
         accountDAO.update(account);
+    }
+
+    public void changePassword(UserAccount account, String newPassword) throws Exception {
+        if (newPassword == null || newPassword.isBlank()) {
+            throw new IllegalArgumentException("Mật khẩu không được để trống.");
+        }
+        String hashedPassword = hashPassword(newPassword);
+        account.setPassword_hash(hashedPassword);
+        accountDAO.update(account);
+    }
+
+    private String hashPassword(String password) throws Exception {
+        java.security.MessageDigest md = java.security.MessageDigest.getInstance("SHA-256");
+        byte[] hash = md.digest(password.getBytes());
+        return java.util.Base64.getEncoder().encodeToString(hash);
     }
 }

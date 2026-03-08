@@ -20,10 +20,10 @@ public class AuthenticationService {
         this.tokenService = tokenService;
     }
 
-    public UserAccount login(String username, String password) throws Exception {
+    public LoginResult login(String username, String password) throws Exception {
         UserAccount account = accountService.findByUsername(username);
-        if (account == null || !account.isIs_active()) {
-            throw new Exception("Invalid username or account inactive");
+        if (account == null) {
+            throw new Exception("Invalid username");
         }
 
         String hashedPassword = hashPassword(password);
@@ -31,17 +31,21 @@ public class AuthenticationService {
             throw new Exception("Invalid password");
         }
 
-        // If first login, mark EMAIL_VERIFICATION token as used
-        if (account.isIs_first_login()) {
+        boolean needChangePassword = false;
+
+        // If account is inactive, verify with EMAIL_VERIFICATION token
+        if (!account.isIs_active()) {
             Token emailVerificationToken = tokenService.findValidTokenByUserAndType(account, TokenType.EMAIL_VERIFICATION);
-            if (emailVerificationToken != null) {
-                tokenService.markAsUsed(emailVerificationToken.getToken_value());
+            if (emailVerificationToken == null || !hashedPassword.equals(hashPassword(emailVerificationToken.getToken_value()))) {
+                throw new Exception("Account not verified. Please check your email for verification token.");
             }
-            account.setIs_first_login(false);
+            // Activate account
+            account.setIs_active(true);
             accountService.updateAccount(account);
+            needChangePassword = true; // Need to change password after activation
         }
 
-        return account;
+        return new LoginResult(account, needChangePassword);
     }
 
     private String hashPassword(String password) throws NoSuchAlgorithmException {
