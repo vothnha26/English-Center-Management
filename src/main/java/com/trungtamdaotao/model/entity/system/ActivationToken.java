@@ -10,8 +10,8 @@ public class ActivationToken {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne
-    @JoinColumn(name = "user_id", referencedColumnName = "id")
+    @ManyToOne
+    @JoinColumn(name = "user_id", referencedColumnName = "user_id", nullable = false, columnDefinition = "BIGINT")
     private UserAccount user;
 
     private String token;
@@ -50,5 +50,9 @@ public class ActivationToken {
 
     public void setExpiryTime(LocalDateTime expiryTime) {
         this.expiryTime = expiryTime;
+    }
+
+    public boolean isExpired(){
+        return expiryTime.isAfter(LocalDateTime.now());
     }
 }

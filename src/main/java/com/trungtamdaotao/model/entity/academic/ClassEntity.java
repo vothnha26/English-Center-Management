@@ -1,11 +1,23 @@
 package com.trungtamdaotao.model.entity.academic;
 
-import com.trungtamdaotao.model.entity.core.*;
-import com.trungtamdaotao.model.entity.enums.ClassStatus;
-import com.trungtamdaotao.model.entity.operations.*;
-import jakarta.persistence.*;
-
 import java.time.LocalDate;
+
+import com.trungtamdaotao.model.entity.core.Course;
+import com.trungtamdaotao.model.entity.core.Teacher;
+import com.trungtamdaotao.model.entity.enums.ClassStatus;
+import com.trungtamdaotao.model.entity.operations.Room;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "classes")
@@ -36,5 +48,26 @@ public class ClassEntity {
     private int maxStudent;
 
     @Enumerated(EnumType.STRING)
-    private ClassStatus status = ClassStatus.Planned; // Cần tạo Enum ClassStatus
+    private ClassStatus status = ClassStatus.Planned;
+
+    public ClassEntity() {}
+
+    public Long getClassId()              { return class_id; }
+    public String getClassName()          { return className; }
+    public void setClassName(String n)    { this.className = n; }
+    public Course getCourse()             { return course; }
+    public void setCourse(Course c)       { this.course = c; }
+    public Teacher getTeacher()           { return teacher; }
+    public void setTeacher(Teacher t)     { this.teacher = t; }
+    public Room getRoom()                 { return room; }
+    public void setRoom(Room r)           { this.room = r; }
+    public LocalDate getStartDate()       { return startDate; }
+    public void setStartDate(LocalDate d) { this.startDate = d; }
+    public int getMaxStudent()            { return maxStudent; }
+    public void setMaxStudent(int m)      { this.maxStudent = m; }
+    public ClassStatus getStatus()        { return status; }
+    public void setStatus(ClassStatus s)  { this.status = s; }
+
+    @Override
+    public String toString() { return className; }
 }

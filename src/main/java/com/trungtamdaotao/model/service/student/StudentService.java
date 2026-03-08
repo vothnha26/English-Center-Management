@@ -1,81 +1,81 @@
-package com.trungtamdaotao.model.service.system;
+package com.trungtamdaotao.model.service.student;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.trungtamdaotao.model.dao.system.IStaffDAO;
-import com.trungtamdaotao.model.entity.enums.StaffRole;
+import com.trungtamdaotao.model.dao.student.IStudentDAO;
+import com.trungtamdaotao.model.entity.core.Student;
 import com.trungtamdaotao.model.entity.enums.Status;
-import com.trungtamdaotao.model.entity.system.Staff;
 
-public class StaffService {
+public class StudentService {
 
-    private final IStaffDAO staffDAO;
+    private final IStudentDAO studentDAO;
 
-    public StaffService(IStaffDAO staffDAO) {
-        this.staffDAO = staffDAO;
+    public StudentService(IStudentDAO studentDAO) {
+        this.studentDAO = studentDAO;
     }
 
     // ─── READ ──────────────────────────────────────────────────────────────────
 
-    public List<Staff> getAllStaff() {
-        return staffDAO.findAll();
+    public List<Student> getAllStudents() {
+        return studentDAO.findAll();
     }
 
-    /** Chỉ hiển thị staff đang Active */
-    public List<Staff> getActiveStaff() {
-        return staffDAO.findAll().stream()
+    /** Chỉ hiển thị học viên đang Active */
+    public List<Student> getActiveStudents() {
+        return studentDAO.findAll().stream()
                 .filter(s -> s.getStatus() == Status.Active)
                 .collect(Collectors.toList());
     }
 
     /** Tìm kiếm theo tên hoặc số điện thoại */
-    public List<Staff> search(String keyword) {
-        if (keyword == null || keyword.isBlank()) return getAllStaff();
-        return staffDAO.findByNameOrPhone(keyword.trim());
+    public List<Student> search(String keyword) {
+        if (keyword == null || keyword.isBlank()) return getAllStudents();
+        return studentDAO.findByNameOrPhone(keyword.trim());
     }
 
-    public Staff findById(Long id) {
-        return staffDAO.findById(id);
+    public Student findById(Long id) {
+        return studentDAO.findById(id);
     }
 
     // ─── CREATE ────────────────────────────────────────────────────────────────
 
     /**
-     * Thêm staff mới.
+     * Thêm học viên mới.
      * @throws IllegalArgumentException nếu thiếu họ tên hoặc số điện thoại
      */
-    public void addStaff(String fullName, StaffRole role, String phone, String email) {
+    public void addStudent(String fullName, String phone, String email,
+                           String address, LocalDate dob) {
         if (fullName == null || fullName.isBlank())
             throw new IllegalArgumentException("Họ tên không được để trống.");
         if (phone == null || phone.isBlank())
             throw new IllegalArgumentException("Số điện thoại không được để trống.");
-        if (role == null)
-            throw new IllegalArgumentException("Vai trò không được để trống.");
 
-        Staff s = new Staff();
+        Student s = new Student();
         s.setFullName(fullName.trim());
-        s.setRole(role);
         s.setPhone(phone.trim());
         s.setEmail(email);
-        s.setStatus(Status.Active);
-        staffDAO.save(s);
+        s.setAddress(address);
+        s.setDateOfBirth(dob);
+        s.setRegistrationDate(LocalDate.now());
+        studentDAO.save(s);
     }
 
     // ─── UPDATE ────────────────────────────────────────────────────────────────
 
-    public void updateStaff(Staff staff) {
-        if (staff.getFullName() == null || staff.getFullName().isBlank())
+    public void updateStudent(Student student) {
+        if (student.getFullName() == null || student.getFullName().isBlank())
             throw new IllegalArgumentException("Họ tên không được để trống.");
-        staffDAO.update(staff);
+        studentDAO.update(student);
     }
 
     // ─── SOFT DELETE (đặt trạng thái Inactive thay vì xóa thật) ───────────────
 
-    public void deactivateStaff(Long id) {
-        Staff s = staffDAO.findById(id);
-        if (s == null) throw new IllegalArgumentException("Không tìm thấy staff id=" + id);
+    public void deactivateStudent(Long id) {
+        Student s = studentDAO.findById(id);
+        if (s == null) throw new IllegalArgumentException("Không tìm thấy học viên id=" + id);
         s.setStatus(Status.Inactive);
-        staffDAO.update(s);
+        studentDAO.update(s);
     }
 }
