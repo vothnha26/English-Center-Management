@@ -22,12 +22,22 @@ public class FinanceController {
     private final PaymentService paymentService;
     private final FinanceReportService reportService;
 
+    /** DIP-compliant: nhận Service từ bên ngoài (dễ test, dễ thay thế impl) */
+    public FinanceController(InvoiceService invoiceService,
+                             PaymentService paymentService,
+                             FinanceReportService reportService) {
+        this.invoiceService = invoiceService;
+        this.paymentService = paymentService;
+        this.reportService  = reportService;
+    }
+
+    /** Convenience constructor — tự khởi tạo impl mặc định khi không có DI framework */
     public FinanceController() {
         InvoiceDAOImpl invoiceDAO = new InvoiceDAOImpl();
         PaymentDAOImpl paymentDAO = new PaymentDAOImpl();
-        invoiceService = new InvoiceService(invoiceDAO);
-        paymentService = new PaymentService(paymentDAO, invoiceDAO);
-        reportService  = new FinanceReportService(paymentDAO);
+        this.invoiceService = new InvoiceService(invoiceDAO);
+        this.paymentService = new PaymentService(paymentDAO, invoiceDAO);
+        this.reportService  = new FinanceReportService(paymentDAO);
     }
 
     // ─── Hóa đơn ───────────────────────────────────────────────────────────────

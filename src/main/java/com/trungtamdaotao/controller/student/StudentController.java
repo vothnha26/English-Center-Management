@@ -16,9 +16,16 @@ public class StudentController {
     private final StudentService studentService;
     private final EnrollmentService enrollmentService;
 
+    /** DIP-compliant: nhận Service từ bên ngoài (dễ test, dễ thay thế impl) */
+    public StudentController(StudentService studentService, EnrollmentService enrollmentService) {
+        this.studentService    = studentService;
+        this.enrollmentService = enrollmentService;
+    }
+
+    /** Convenience constructor — tự khởi tạo impl mặc định khi không có DI framework */
     public StudentController() {
-        studentService    = new StudentService(new StudentDAOImpl());
-        enrollmentService = new EnrollmentService(new EnrollmentDAOImpl());
+        this(new StudentService(new StudentDAOImpl()),
+             new EnrollmentService(new EnrollmentDAOImpl()));
     }
 
     // ─── Học viên ──────────────────────────────────────────────────────────────
