@@ -35,6 +35,14 @@ public class AccountService {
         return account;
     }
 
+    public UserAccount createAccount(UserAccount account) {
+        if(account != null) {
+            accountDAO.save(account);
+            return account;
+        }
+        return null;
+    }
+
     public UserAccount findByUsername(String username) {
         return accountDAO.findByUsername(username);
     }

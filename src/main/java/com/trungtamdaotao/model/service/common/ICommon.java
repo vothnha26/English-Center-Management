@@ -9,7 +9,7 @@ import jakarta.mail.MessagingException;
 public interface ICommon {
     /**
      * Gửi email tới địa chỉ được chỉ định
-     * 
+     *
      * @param to Địa chỉ email nhận
      * @param subject Chủ đề email
      * @param body Nội dung email

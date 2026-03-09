@@ -23,7 +23,6 @@ import com.trungtamdaotao.controller.system.StaffController;
 import com.trungtamdaotao.model.entity.enums.StaffRole;
 import com.trungtamdaotao.model.entity.system.Staff;
 import com.trungtamdaotao.model.service.system.account.AccountService;
-import com.trungtamdaotao.model.service.system.account.RegistrationService;
 import com.trungtamdaotao.model.dao.impl.AccountDAOImpl;
 
 /**
@@ -34,7 +33,6 @@ public class StaffManagerFrame extends JFrame {
 
     private final StaffController controller;
     private final AccountService accountService;
-    private final RegistrationService registrationService;
 
     // Bảng danh sách
     private JTable table;
@@ -55,7 +53,6 @@ public class StaffManagerFrame extends JFrame {
     public StaffManagerFrame() {
         this.controller = new StaffController();
         this.accountService = new AccountService(new AccountDAOImpl());
-        this.registrationService = new RegistrationService();
         initUI();
         loadTable(controller.getAllStaff());
     }
@@ -286,6 +283,10 @@ public class StaffManagerFrame extends JFrame {
             JOptionPane.showMessageDialog(this, ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
         }
     }
+
+    /**
+     * Tạo tài khoản thủ công cho staff đã có (kèm xem trước username & role).
+     */
 
     private JLabel label(String text) { return new JLabel(text); }
 

@@ -9,7 +9,6 @@ import com.trungtamdaotao.model.entity.enums.TokenType;
 import com.trungtamdaotao.model.entity.system.Staff;
 import com.trungtamdaotao.model.entity.system.Token;
 import com.trungtamdaotao.model.entity.system.UserAccount;
-import com.trungtamdaotao.model.service.common.ICommon;
 import com.trungtamdaotao.model.service.common.EmailService;
 import com.trungtamdaotao.model.service.system.TokenService;
 import com.trungtamdaotao.util.EmailConfig;
@@ -17,14 +16,15 @@ import com.trungtamdaotao.util.EmailConfig;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
+import java.util.function.Consumer;
 
 public class RegistrationService {
 
     private final AccountService accountService;
     private final TokenService tokenService;
-    private final ICommon emailService;
+    private final EmailService emailService;
 
-    public RegistrationService(AccountService accountService, TokenService tokenService, ICommon emailService) {
+    public RegistrationService(AccountService accountService, TokenService tokenService, EmailService emailService) {
         this.accountService = accountService;
         this.tokenService = tokenService;
         this.emailService = emailService;
@@ -34,42 +34,56 @@ public class RegistrationService {
     public RegistrationService() {
         this(new AccountService(new AccountDAOImpl()),
              new TokenService(new TokenDAOImpl()),
-             new EmailService(EmailConfig.getSmtpHost(), EmailConfig.getSmtpPort(), 
+             new EmailService(EmailConfig.getSmtpHost(), EmailConfig.getSmtpPort(),
                              EmailConfig.getMailUsername(), EmailConfig.getMailPassword(), false));
     }
 
     public void registerUser(String username, String email, AccountRole role,
-                             Teacher teacher, Student student, Staff staff) throws Exception {
-        // Check if account already exists
+                             Consumer<UserAccount> binder) throws Exception {
+        // 1. Kiểm tra tài khoản đã tồn tại chưa
         UserAccount account = accountService.findByUsername(username);
 
         if (account == null) {
-            // Create account with temporary password first
-            String tempPassword = "temp";
-            String tempPasswordHash = hashPassword(tempPassword);
-            account = accountService.createAccount(username, tempPasswordHash, role, teacher, student, staff);
+            // Phải khởi tạo Object trước khi dùng binder!
+            account = new UserAccount();
+            account.setUsername(username);
+            account.setRole(role);
+            account.setIs_active(false); // Mặc định chưa kích hoạt
 
-            // Generate token for email verification
-            Token token = tokenService.generateToken(account, TokenType.EMAIL_VERIFICATION, 15); // 15 minutes expiry
+            // Dùng Binder để gán Teacher/Student/Staff tùy trường hợp
+            binder.accept(account);
 
-            // Update account password to hashed token value
+            // Đặt mật khẩu tạm thời "temp" ban đầu (Hoặc bỏ qua bước này, gán thẳng Token luôn)
+            String tempPasswordHash = hashPassword("temp");
+            account.setPassword_hash(tempPasswordHash);
+
+            // Lưu Account lần 1 để lấy ID (Cần ID để tạo Token)
+            account = accountService.createAccount(account);
+
+            // 2. Tạo Token (15 phút)
+            Token token = tokenService.generateToken(account, TokenType.EMAIL_VERIFICATION, 15);
+
+            // 3. Cập nhật password_hash thành mã Token (OTP) để làm mật khẩu tạm
             String tokenPasswordHash = hashPassword(token.getToken_value());
             account.setPassword_hash(tokenPasswordHash);
+
+            // Lưu lần 2 để cập nhật mật khẩu Token vào DB
             accountService.updateAccount(account);
 
-            // Send email with token as temporary password
+            // 4. Gửi Mail
             String subject = "Your Temporary Password";
             String body = "Your temporary password is: " + token.getToken_value();
             try {
                 emailService.sendEmail(email, subject, body);
             } catch (Exception e) {
-                System.err.println("Lỗi gửi email: " + e.getMessage());
+                System.err.println("Lưu DB xong nhưng gửi mail lỗi: " + e.getMessage());
             }
         } else {
-            // Update existing account with new entity relationships if needed
-            if (teacher != null) account.setTeacher(teacher);
-            if (student != null) account.setStudent(student);
-            if (staff != null) account.setStaff(staff);
+            // --- LUỒNG CẬP NHẬT ---
+            // Nếu đã có account, cập nhật vai trò + liên kết Entity thông qua binder
+            account.setRole(role);                   // ensure role is synchronized
+            binder.accept(account);
+            accountService.updateAccount(account);
         }
     }
 

@@ -73,7 +73,7 @@ public class StudentService {
 
         // Tự động tạo account nếu có email
         if (email != null && !email.isBlank()) {
-            registrationService.registerUser(email, email, AccountRole.STUDENT, null, s, null);
+            registrationService.registerUser(email, email, AccountRole.STUDENT, acc -> acc.setStudent(s));
         }
     }
 
