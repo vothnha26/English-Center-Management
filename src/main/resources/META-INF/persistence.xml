@@ -5,9 +5,33 @@
     <persistence-unit name="TrungTamDaoTaoPU">
         <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
 
-        <class>com.trungtamdaotao.model.Result</class>
+        <!-- System entities -->
         <class>com.trungtamdaotao.model.entity.system.Staff</class>
-        <class>com.trungtamdaotao.model.UserAccount</class>
+        <class>com.trungtamdaotao.model.entity.system.UserAccount</class>
+        <class>com.trungtamdaotao.model.entity.system.Notification</class>
+
+        <!-- Core entities -->
+        <class>com.trungtamdaotao.model.entity.core.Course</class>
+        <class>com.trungtamdaotao.model.entity.core.Teacher</class>
+        <class>com.trungtamdaotao.model.entity.core.Student</class>
+
+        <!-- Academic entities -->
+        <class>com.trungtamdaotao.model.entity.academic.ClassEntity</class>
+        <class>com.trungtamdaotao.model.entity.academic.Result</class>
+        <class>com.trungtamdaotao.model.entity.academic.Schedule</class>
+        <class>com.trungtamdaotao.model.entity.academic.Attendance</class>
+        <class>com.trungtamdaotao.model.entity.academic.Enrollment</class>
+        <class>com.trungtamdaotao.model.entity.academic.Certificate</class>
+        <class>com.trungtamdaotao.model.entity.academic.PlacementTest</class>
+
+        <!-- Operations entities -->
+        <class>com.trungtamdaotao.model.entity.operations.Room</class>
+        <class>com.trungtamdaotao.model.entity.operations.Branch</class>
+        <class>com.trungtamdaotao.model.entity.operations.Promotion</class>
+
+        <!-- Finance entities -->
+        <class>com.trungtamdaotao.model.entity.finance.Invoice</class>
+        <class>com.trungtamdaotao.model.entity.finance.Payment</class>
 
         <properties>
             <property name="jakarta.persistence.jdbc.driver" value="com.mysql.cj.jdbc.Driver"/>

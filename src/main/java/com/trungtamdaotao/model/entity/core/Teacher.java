@@ -80,4 +80,22 @@ public class Teacher {
     public void setStatus(Status status) {
         this.status = status;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        Teacher teacher = (Teacher) obj;
+        return teacher_id != null && teacher_id.equals(teacher.teacher_id);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return fullName;
+    }
 }
