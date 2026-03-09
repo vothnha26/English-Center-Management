@@ -40,3 +40,5 @@ build/
 
 # File cấu hình hệ thống
 .env
+UI_UX_PROPOSAL.md
+GEMINI.md

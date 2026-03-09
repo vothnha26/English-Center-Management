@@ -20,7 +20,7 @@ public class EnrollmentService {
      * @throws IllegalStateException nếu học viên đã theo học lớp này rồi
      */
     public void enroll(Student student, ClassEntity clazz) {
-        if (enrollmentDAO.existsByStudentAndClass(student.getStudent_id(), clazz.getClassId())) {
+        if (enrollmentDAO.existsByStudentAndClass(student.getStudent_id(), clazz.getClass_id())) {
             throw new IllegalStateException(
                 "Học viên \"" + student.getFullName() + "\" đã được ghi danh vào lớp này rồi.");
         }

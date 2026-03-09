@@ -1,296 +1,222 @@
 package com.trungtamdaotao.view.system;
 
-import java.awt.BorderLayout;
-import java.awt.FlowLayout;
-import java.awt.GridLayout;
-import java.util.List;
-
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.JTextField;
-import javax.swing.ListSelectionModel;
-import javax.swing.SwingUtilities;
-import javax.swing.table.DefaultTableModel;
-
 import com.trungtamdaotao.controller.system.StaffController;
+import com.trungtamdaotao.model.dao.impl.AccountDAOImpl;
 import com.trungtamdaotao.model.entity.enums.StaffRole;
 import com.trungtamdaotao.model.entity.system.Staff;
 import com.trungtamdaotao.model.service.system.account.AccountService;
-import com.trungtamdaotao.model.dao.impl.AccountDAOImpl;
+import com.trungtamdaotao.util.UIHelper;
+import com.trungtamdaotao.view.common.BaseManagerFrame;
 
-/**
- * Màn hình Quản lý Staff (CRUD).
- * Layout: thanh tìm kiếm trên đầu, bảng danh sách ở giữa, form nhập liệu bên dưới.
- */
-public class StaffManagerFrame extends JFrame {
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+import java.awt.*;
+import java.util.List;
+
+public class StaffManagerFrame extends BaseManagerFrame {
 
     private final StaffController controller;
     private final AccountService accountService;
 
-    // Bảng danh sách
-    private JTable table;
+    private JTable tblStaff;
     private DefaultTableModel tableModel;
 
-    // Ô tìm kiếm
-    private JTextField txtSearch;
-
-    // Form nhập liệu
-    private JTextField txtId, txtName, txtPhone, txtEmail;
+    private JTextField txtName, txtPhone, txtEmail, txtSearch;
     private JComboBox<StaffRole> cbRole;
-
-    // Nút hành động
-    private JButton btnAdd, btnUpdate, btnDelete, btnClear, btnSearch, btnInactiveAccount, btnSendVerify;
-
-    private static final String[] COLUMNS = {"ID", "Họ tên", "Vai trò", "Điện thoại", "Email", "Trạng thái"};
+    private JButton btnAdd, btnUpdate, btnDelete, btnClear, btnSearch, btnReload, btnInactiveAccount, btnSendVerify;
 
     public StaffManagerFrame() {
+        super("Quản lý Nhân viên");
         this.controller = new StaffController();
         this.accountService = new AccountService(new AccountDAOImpl());
-        initUI();
-        loadTable(controller.getAllStaff());
+        loadTableData();
     }
 
-    // ──────────────────────────────────────────────────────────────────────────
-    private void initUI() {
-        setTitle("Quản lý Staff");
-        setSize(960, 640);
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        setLocationRelativeTo(null);
-        setLayout(new BorderLayout(8, 8));
+    @Override
+    protected void initComponents() {
+        // --- Toolbar (NORTH) ---
+        JPanel pnlToolbar = new JPanel(new FlowLayout(FlowLayout.LEFT, 15, 10));
+        pnlToolbar.setBackground(UIHelper.PRIMARY_COLOR);
 
-        add(buildTopPanel(),    BorderLayout.NORTH);
-        add(buildTablePanel(),  BorderLayout.CENTER);
-        add(buildFormPanel(),   BorderLayout.SOUTH);
-    }
+        JLabel lblSearch = new JLabel("Tìm kiếm:");
+        lblSearch.setForeground(Color.WHITE);
+        lblSearch.setFont(UIHelper.BOLD_FONT);
+        pnlToolbar.add(lblSearch);
 
-    // ── Top: thanh tìm kiếm ──────────────────────────────────────────────────
-    private JPanel buildTopPanel() {
-        JPanel p = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 6));
-        p.setBorder(BorderFactory.createTitledBorder("Tìm kiếm"));
+        txtSearch = new JTextField(25);
+        pnlToolbar.add(txtSearch);
 
-        txtSearch = new JTextField(24);
-        btnSearch = new JButton("Tìm");
-        JButton btnReload = new JButton("Tải lại");
+        btnSearch = UIHelper.createStandardButton("Tìm", Color.WHITE, "🔍");
+        btnSearch.setForeground(UIHelper.PRIMARY_COLOR);
+        pnlToolbar.add(btnSearch);
 
-        btnSearch.addActionListener(e -> doSearch());
-        txtSearch.addActionListener(e -> doSearch());
-        btnReload.addActionListener(e -> loadTable(controller.getAllStaff()));
+        btnReload = UIHelper.createStandardButton("Tải lại", Color.WHITE, "⟳");
+        btnReload.setForeground(UIHelper.PRIMARY_COLOR);
+        pnlToolbar.add(btnReload);
 
-        p.add(new JLabel("Tên / SĐT:"));
-        p.add(txtSearch);
-        p.add(btnSearch);
-        p.add(btnReload);
-        return p;
-    }
+        add(pnlToolbar, BorderLayout.NORTH);
 
-    // ── Center: bảng JTable ──────────────────────────────────────────────────
-    private JScrollPane buildTablePanel() {
-        tableModel = new DefaultTableModel(COLUMNS, 0) {
+        // --- Form (WEST) ---
+        JPanel pnlForm = UIHelper.createFormPanel("Thông tin nhân viên");
+        pnlForm.setPreferredSize(new Dimension(400, 0));
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(8, 8, 8, 8);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.anchor = GridBagConstraints.WEST;
+
+        int row = 0;
+        addFormField(pnlForm, "Họ tên (*):", txtName = new JTextField(), gbc, row++);
+        
+        gbc.gridx = 0; gbc.gridy = row;
+        pnlForm.add(createFieldLabel("Vai trò (*):"), gbc);
+        gbc.gridx = 1;
+        cbRole = new JComboBox<>(StaffRole.values());
+        pnlForm.add(cbRole, gbc);
+        row++;
+
+        addFormField(pnlForm, "Điện thoại (*):", txtPhone = new JTextField(), gbc, row++);
+        addFormField(pnlForm, "Email:", txtEmail = new JTextField(), gbc, row++);
+
+        // Buttons Panel
+        JPanel pnlButtons = new JPanel(new GridLayout(3, 2, 10, 10));
+        pnlButtons.setOpaque(false);
+        pnlButtons.setBorder(BorderFactory.createEmptyBorder(20, 0, 0, 0));
+
+        btnAdd = UIHelper.createStandardButton("Thêm", UIHelper.SUCCESS_COLOR, "✚");
+        btnUpdate = UIHelper.createStandardButton("Sửa", UIHelper.WARNING_COLOR, "✎");
+        btnDelete = UIHelper.createStandardButton("Xóa", UIHelper.DANGER_COLOR, "✘");
+        btnClear = UIHelper.createStandardButton("Mới", UIHelper.PRIMARY_COLOR, "⟲");
+        btnInactiveAccount = UIHelper.createStandardButton("Khóa TK", Color.GRAY, "🚫");
+        btnSendVerify = UIHelper.createStandardButton("Gửi Email", Color.BLUE, "📧");
+
+        pnlButtons.add(btnAdd); pnlButtons.add(btnUpdate);
+        pnlButtons.add(btnDelete); pnlButtons.add(btnClear);
+        pnlButtons.add(btnInactiveAccount); pnlButtons.add(btnSendVerify);
+
+        gbc.gridx = 0; gbc.gridy = row; gbc.gridwidth = 2;
+        pnlForm.add(pnlButtons, gbc);
+
+        add(pnlForm, BorderLayout.WEST);
+
+        // --- Table (CENTER) ---
+        String[] columns = {"ID", "Họ tên", "Vai trò", "Điện thoại", "Email", "Tài khoản"};
+        tableModel = new DefaultTableModel(columns, 0) {
             @Override public boolean isCellEditable(int r, int c) { return false; }
         };
-        table = new JTable(tableModel);
-        table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        table.getSelectionModel().addListSelectionListener(e -> {
-            if (!e.getValueIsAdjusting()) populateForm();
-        });
-        table.getColumnModel().getColumn(0).setMaxWidth(50);
-        return new JScrollPane(table);
+        tblStaff = new JTable(tableModel);
+        setupTable(tblStaff);
+        add(new JScrollPane(tblStaff), BorderLayout.CENTER);
     }
 
-    // ── South: form nhập liệu + nút ──────────────────────────────────────────
-    private JPanel buildFormPanel() {
-        JPanel wrapper = new JPanel(new BorderLayout(4, 4));
-        wrapper.setBorder(BorderFactory.createTitledBorder("Thông tin Staff"));
+    private void addFormField(JPanel p, String label, JTextField tf, GridBagConstraints gbc, int r) {
+        gbc.gridx = 0; gbc.gridy = r; gbc.gridwidth = 1;
+        p.add(createFieldLabel(label), gbc);
+        gbc.gridx = 1;
+        p.add(tf, gbc);
+    }
 
-        // Lưới nhập liệu
-        JPanel grid = new JPanel(new GridLayout(2, 5, 6, 4));
-        txtId      = new JTextField(); txtId.setEditable(false);
-        txtName    = new JTextField();
-        cbRole     = new JComboBox<>(StaffRole.values());
-        txtPhone   = new JTextField();
-        txtEmail   = new JTextField();
-
-        grid.add(label("ID:")); grid.add(txtId);
-        grid.add(label("Họ tên (*):"));   grid.add(txtName);
-        grid.add(label("Vai trò (*):")); grid.add(cbRole);
-        grid.add(label("Điện thoại (*):")); grid.add(txtPhone);
-        grid.add(label("Email:"));         grid.add(txtEmail);
-
-        // Nút hành động
-        JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 4));
-        btnAdd    = new JButton("➕ Thêm");
-        btnUpdate = new JButton("✏ Cập nhật");
-        btnDelete = new JButton("🗑 Xóa (Inactive)");
-        btnClear  = new JButton("⬜ Xóa form");
-        btnInactiveAccount = new JButton("🚫 Inactive Account");
-        btnSendVerify = new JButton("📧 Send Verify Email");
-
-        btnAdd.addActionListener(e    -> doAdd());
+    @Override
+    protected void handleEvents() {
+        btnSearch.addActionListener(e -> doSearch());
+        btnReload.addActionListener(e -> loadTableData());
+        btnAdd.addActionListener(e -> doAdd());
         btnUpdate.addActionListener(e -> doUpdate());
         btnDelete.addActionListener(e -> doDelete());
-        btnClear.addActionListener(e  -> clearForm());
+        btnClear.addActionListener(e -> clearForm());
         btnInactiveAccount.addActionListener(e -> doInactiveAccount());
         btnSendVerify.addActionListener(e -> doSendVerify());
 
-        btnPanel.add(btnAdd); btnPanel.add(btnUpdate);
-        btnPanel.add(btnDelete); btnPanel.add(btnClear);
-        btnPanel.add(btnInactiveAccount); btnPanel.add(btnSendVerify);
-
-        wrapper.add(grid, BorderLayout.CENTER);
-        wrapper.add(btnPanel, BorderLayout.SOUTH);
-        return wrapper;
+        tblStaff.getSelectionModel().addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) populateForm();
+        });
     }
 
-    // ──────────────────────────────────────────────────────────────────────────
-    // Nạp dữ liệu vào bảng
-    private void loadTable(List<Staff> list) {
+    @Override
+    protected void loadTableData() {
+        if (controller != null) renderTable(controller.getAllStaff());
+    }
+
+    private void renderTable(List<Staff> list) {
         tableModel.setRowCount(0);
         for (Staff s : list) {
-            String accountStatus = "No Account";
+            String accStatus = "No Account";
             if (s.getEmail() != null && !s.getEmail().isBlank()) {
-                var account = accountService.findByUsername(s.getEmail());
-                if (account != null) {
-                    accountStatus = account.isIs_active() ? "Active" : "Inactive";
-                }
+                var acc = accountService.findByUsername(s.getEmail());
+                if (acc != null) accStatus = acc.isIs_active() ? "Active" : "Inactive";
             }
-            tableModel.addRow(new Object[]{
-                s.getStaff_id(),
-                s.getFullName(),
-                s.getRole(),
-                s.getPhone(),
-                s.getEmail(),
-                accountStatus
-            });
+            tableModel.addRow(new Object[]{ s.getStaff_id(), s.getFullName(), s.getRole(), s.getPhone(), s.getEmail(), accStatus });
         }
     }
 
-    // Chọn hàng → điền vào form
     private void populateForm() {
-        int row = table.getSelectedRow();
+        int row = tblStaff.getSelectedRow();
         if (row < 0) return;
-        txtId.setText(tableModel.getValueAt(row, 0).toString());
         txtName.setText(tableModel.getValueAt(row, 1).toString());
         cbRole.setSelectedItem(tableModel.getValueAt(row, 2));
         txtPhone.setText(tableModel.getValueAt(row, 3).toString());
-        Object email = tableModel.getValueAt(row, 4);
-        txtEmail.setText(email != null ? email.toString() : "");
+        txtEmail.setText(tableModel.getValueAt(row, 4) != null ? tableModel.getValueAt(row, 4).toString() : "");
     }
 
-    // ── Hành động CRUD ───────────────────────────────────────────────────────
-
     private void doSearch() {
-        loadTable(controller.searchStaff(txtSearch.getText()));
+        renderTable(controller.searchStaff(txtSearch.getText()));
     }
 
     private void doAdd() {
         try {
-            controller.addStaff(txtName.getText(), (StaffRole) cbRole.getSelectedItem(),
-                                txtPhone.getText(), txtEmail.getText());
-            JOptionPane.showMessageDialog(this, "Thêm staff thành công!");
-            clearForm();
-            loadTable(controller.getAllStaff());
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
-        }
+            controller.addStaff(txtName.getText(), (StaffRole) cbRole.getSelectedItem(), txtPhone.getText(), txtEmail.getText());
+            JOptionPane.showMessageDialog(this, "Thêm nhân viên thành công!");
+            clearForm(); loadTableData();
+        } catch (Exception ex) { JOptionPane.showMessageDialog(this, "Lỗi: " + ex.getMessage()); }
     }
 
     private void doUpdate() {
-        if (txtId.getText().isBlank()) {
-            JOptionPane.showMessageDialog(this, "Vui lòng chọn staff cần cập nhật.");
-            return;
-        }
+        int row = tblStaff.getSelectedRow();
+        if (row < 0) return;
         try {
-            long id = Long.parseLong(txtId.getText());
+            Long id = (Long) tableModel.getValueAt(row, 0);
             Staff s = controller.getStaffById(id);
-            if (s == null) { JOptionPane.showMessageDialog(this, "Không tìm thấy staff."); return; }
-
             s.setFullName(txtName.getText());
             s.setRole((StaffRole) cbRole.getSelectedItem());
             s.setPhone(txtPhone.getText());
             s.setEmail(txtEmail.getText());
             controller.updateStaff(s);
             JOptionPane.showMessageDialog(this, "Cập nhật thành công!");
-            loadTable(controller.getAllStaff());
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
-        }
+            loadTableData();
+        } catch (Exception ex) { JOptionPane.showMessageDialog(this, "Lỗi: " + ex.getMessage()); }
     }
 
     private void doDelete() {
-        if (txtId.getText().isBlank()) {
-            JOptionPane.showMessageDialog(this, "Vui lòng chọn staff muốn xóa.");
-            return;
-        }
-        int confirm = JOptionPane.showConfirmDialog(this,
-                "Staff sẽ bị đặt Inactive. Tiếp tục?", "Xác nhận", JOptionPane.YES_NO_OPTION);
-        if (confirm != JOptionPane.YES_OPTION) return;
-        try {
-            controller.deleteStaff(Long.parseLong(txtId.getText()));
-            JOptionPane.showMessageDialog(this, "Đã đặt trạng thái Inactive.");
-            clearForm();
-            loadTable(controller.getAllStaff());
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+        int row = tblStaff.getSelectedRow();
+        if (row < 0) return;
+        if (JOptionPane.showConfirmDialog(this, "Vô hiệu hóa nhân viên này?") == JOptionPane.YES_OPTION) {
+            try {
+                controller.deleteStaff((Long) tableModel.getValueAt(row, 0));
+                clearForm(); loadTableData();
+            } catch (Exception ex) { JOptionPane.showMessageDialog(this, "Lỗi: " + ex.getMessage()); }
         }
     }
 
     private void clearForm() {
-        txtId.setText(""); txtName.setText(""); txtPhone.setText("");
-        txtEmail.setText(""); cbRole.setSelectedIndex(0);
-        table.clearSelection();
+        txtName.setText(""); txtPhone.setText(""); txtEmail.setText(""); cbRole.setSelectedIndex(0);
+        tblStaff.clearSelection();
     }
 
     private void doInactiveAccount() {
-        if (txtId.getText().isBlank() || txtEmail.getText().isBlank()) {
-            JOptionPane.showMessageDialog(this, "Vui lòng chọn staff có email.");
-            return;
-        }
-        int confirm = JOptionPane.showConfirmDialog(this,
-                "Account sẽ bị inactive. Tiếp tục?", "Xác nhận", JOptionPane.YES_NO_OPTION);
-        if (confirm != JOptionPane.YES_OPTION) return;
-        try {
-            var account = accountService.findByUsername(txtEmail.getText());
-            if (account != null) {
-                account.setIs_active(false);
-                accountService.updateAccount(account);
-                JOptionPane.showMessageDialog(this, "Account đã inactive.");
-                loadTable(controller.getAllStaff());
-            } else {
-                JOptionPane.showMessageDialog(this, "Không tìm thấy account.");
-            }
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+        if (txtEmail.getText().isBlank()) return;
+        if (JOptionPane.showConfirmDialog(this, "Khóa tài khoản này?") == JOptionPane.YES_OPTION) {
+            try {
+                var acc = accountService.findByUsername(txtEmail.getText());
+                if (acc != null) { acc.setIs_active(false); accountService.updateAccount(acc); loadTableData(); }
+            } catch (Exception ex) { JOptionPane.showMessageDialog(this, "Lỗi: " + ex.getMessage()); }
         }
     }
 
     private void doSendVerify() {
-        if (txtId.getText().isBlank() || txtEmail.getText().isBlank()) {
-            JOptionPane.showMessageDialog(this, "Vui lòng chọn staff có email.");
-            return;
-        }
-        try {
-            controller.resendVerification(txtEmail.getText());
-            JOptionPane.showMessageDialog(this, "Email xác thực đã gửi.");
-            loadTable(controller.getAllStaff());
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
-        }
+        if (txtEmail.getText().isBlank()) return;
+        try { controller.resendVerification(txtEmail.getText()); JOptionPane.showMessageDialog(this, "Đã gửi email xác thực."); }
+        catch (Exception ex) { JOptionPane.showMessageDialog(this, "Lỗi: " + ex.getMessage()); }
     }
 
-    /**
-     * Tạo tài khoản thủ công cho staff đã có (kèm xem trước username & role).
-     */
-
-    private JLabel label(String text) { return new JLabel(text); }
-
-    // ── Entry point (standalone test) ────────────────────────────────────────
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> new StaffManagerFrame().setVisible(true));
     }

@@ -29,4 +29,53 @@ public class Schedule {
     @ManyToOne
     @JoinColumn(name = "room_id")
     private Room room;
+
+    // Getters and Setters
+    public Long getSchedule_id() {
+        return schedule_id;
+    }
+
+    public void setSchedule_id(Long schedule_id) {
+        this.schedule_id = schedule_id;
+    }
+
+    public ClassEntity getClazz() {
+        return clazz;
+    }
+
+    public void setClazz(ClassEntity clazz) {
+        this.clazz = clazz;
+    }
+
+    public LocalDate getStudyDate() {
+        return studyDate;
+    }
+
+    public void setStudyDate(LocalDate studyDate) {
+        this.studyDate = studyDate;
+    }
+
+    public LocalTime getStartTime() {
+        return startTime;
+    }
+
+    public void setStartTime(LocalTime startTime) {
+        this.startTime = startTime;
+    }
+
+    public LocalTime getEndTime() {
+        return endTime;
+    }
+
+    public void setEndTime(LocalTime endTime) {
+        this.endTime = endTime;
+    }
+
+    public Room getRoom() {
+        return room;
+    }
+
+    public void setRoom(Room room) {
+        this.room = room;
+    }
 }

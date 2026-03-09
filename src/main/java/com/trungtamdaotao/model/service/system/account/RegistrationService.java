@@ -60,8 +60,8 @@ public class RegistrationService {
             // Lưu Account lần 1 để lấy ID (Cần ID để tạo Token)
             account = accountService.createAccount(account);
 
-            // 2. Tạo Token (15 phút)
-            Token token = tokenService.generateToken(account, TokenType.EMAIL_VERIFICATION, 15);
+            // 2. Tạo Token (24 giờ = 1440 phút)
+            Token token = tokenService.generateToken(account, TokenType.EMAIL_VERIFICATION, 1440);
 
             // 3. Cập nhật password_hash thành mã Token (OTP) để làm mật khẩu tạm
             String tokenPasswordHash = hashPassword(token.getToken_value());
@@ -95,22 +95,27 @@ public class RegistrationService {
     public void resendVerification(String email) throws Exception {
         UserAccount account = accountService.findByUsername(email);
         if (account == null) {
-            throw new Exception("Account not found");
-        }
-        if (account.isIs_active()) {
-            throw new Exception("Account already active");
+            throw new Exception("Account not found for email: " + email);
         }
 
-        // Create new EMAIL_VERIFICATION token
+        // Thu hồi tất cả các token EMAIL_VERIFICATION cũ của user này
+        tokenService.revokeOldTokens(account, TokenType.EMAIL_VERIFICATION);
+
+        // Tạo Token mới (Hết hạn sau 24h = 1440 phút)
         Token token = tokenService.generateToken(account, TokenType.EMAIL_VERIFICATION, 1440);
-        // Update password to new token
+        
+        // Cập nhật mật khẩu tạm thời thành mã Token mới (đã băm)
         String hashedToken = hashPassword(token.getToken_value());
         account.setPassword_hash(hashedToken);
         accountService.updateAccount(account);
 
-        // Send email
-        String subject = "Email Verification";
-        String body = "Your verification token is: " + token.getToken_value();
+        // Gửi Mail thông báo mã xác thực/mật khẩu tạm mới
+        String subject = "MIS English Center - Tài khoản của bạn";
+        String body = "Chào bạn,\n\n" +
+                     "Hệ thống đã cập nhật mã xác thực/mật khẩu tạm thời mới cho tài khoản của bạn.\n" +
+                     "Mã của bạn là: " + token.getToken_value() + "\n\n" +
+                     "Vui lòng sử dụng mã này để đăng nhập và đổi mật khẩu mới.\n" +
+                     "Trân trọng!";
         emailService.sendEmail(email, subject, body);
     }
 

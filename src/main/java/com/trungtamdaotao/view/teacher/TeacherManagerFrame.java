@@ -1,153 +1,148 @@
 package com.trungtamdaotao.view.teacher;
 
-import java.awt.BorderLayout;
-import java.awt.FlowLayout;
-import java.awt.GridLayout;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
-import java.util.List;
+import com.trungtamdaotao.controller.teacher.TeacherController;
+import com.trungtamdaotao.model.entity.core.Teacher;
+import com.trungtamdaotao.util.UIHelper;
+import com.trungtamdaotao.view.common.BaseManagerFrame;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import java.awt.*;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
 
-import com.trungtamdaotao.controller.teacher.TeacherController;
-import com.trungtamdaotao.model.entity.core.Teacher;
-
-/**
- * Màn hình quản lý giáo viên. Cấu trúc tương tự StudentManagerFrame.
- */
-public class TeacherManagerFrame extends JFrame {
+public class TeacherManagerFrame extends BaseManagerFrame {
 
     private final TeacherController controller;
-
-    private JTable table;
+    private JTable tblTeacher;
     private DefaultTableModel tableModel;
 
-    private JTextField txtSearch;
-
-    private JTextField txtId, txtFullName, txtPhone, txtEmail, txtSpecialty, txtHireDate;
-    private JButton btnAdd, btnUpdate, btnDelete, btnClear, btnSearch;
+    private JTextField txtFullName, txtPhone, txtEmail, txtSpecialty, txtHireDate, txtSearch;
+    private JButton btnAdd, btnUpdate, btnDelete, btnClear, btnSearch, btnReload;
 
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-    private static final String[] COLUMNS = {"ID", "Họ tên", "Điện thoại", "Email",
-            "Chuyên môn", "Ngày tuyển", "Trạng thái"};
 
     public TeacherManagerFrame() {
+        super("Quản lý Giáo viên");
         this.controller = new TeacherController();
-        initUI();
-        loadTable(controller.getAllTeachers());
+        loadTableData();
     }
 
-    private void initUI() {
-        setTitle("Quản lý Giáo viên");
-        setSize(900, 600);
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        setLocationRelativeTo(null);
-        setLayout(new BorderLayout(8, 8));
+    @Override
+    protected void initComponents() {
+        // --- Toolbar (NORTH) ---
+        JPanel pnlToolbar = new JPanel(new FlowLayout(FlowLayout.LEFT, 15, 10));
+        pnlToolbar.setBackground(UIHelper.PRIMARY_COLOR);
 
-        add(buildTopPanel(), BorderLayout.NORTH);
-        add(buildTablePanel(), BorderLayout.CENTER);
-        add(buildFormPanel(), BorderLayout.SOUTH);
-    }
+        JLabel lblSearch = new JLabel("Tìm kiếm:");
+        lblSearch.setForeground(Color.WHITE);
+        lblSearch.setFont(UIHelper.BOLD_FONT);
+        pnlToolbar.add(lblSearch);
 
-    private JPanel buildTopPanel() {
-        JPanel p = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 6));
-        p.setBorder(BorderFactory.createTitledBorder("Tìm kiếm"));
-        txtSearch = new JTextField(24);
-        btnSearch = new JButton("Tìm");
-        JButton btnReload = new JButton("Tải lại");
+        txtSearch = new JTextField(25);
+        pnlToolbar.add(txtSearch);
 
-        btnSearch.addActionListener(e -> doSearch());
-        txtSearch.addActionListener(e -> doSearch());
-        btnReload.addActionListener(e -> loadTable(controller.getAllTeachers()));
+        btnSearch = UIHelper.createStandardButton("Tìm", Color.WHITE, "🔍");
+        btnSearch.setForeground(UIHelper.PRIMARY_COLOR);
+        pnlToolbar.add(btnSearch);
 
-        p.add(new JLabel("Tên / SĐT: "));
-        p.add(txtSearch);
-        p.add(btnSearch);
-        p.add(btnReload);
-        return p;
-    }
+        btnReload = UIHelper.createStandardButton("Tải lại", Color.WHITE, "⟳");
+        btnReload.setForeground(UIHelper.PRIMARY_COLOR);
+        pnlToolbar.add(btnReload);
 
-    private JScrollPane buildTablePanel() {
-        tableModel = new DefaultTableModel(COLUMNS, 0) {
-            @Override
-            public boolean isCellEditable(int r, int c) {
-                return false;
-            }
+        add(pnlToolbar, BorderLayout.NORTH);
+
+        // --- Form (WEST) ---
+        JPanel pnlForm = UIHelper.createFormPanel("Thông tin giáo viên");
+        pnlForm.setPreferredSize(new Dimension(400, 0));
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(8, 8, 8, 8);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.anchor = GridBagConstraints.WEST;
+
+        int row = 0;
+        addFormField(pnlForm, "Họ tên (*):", txtFullName = new JTextField(), gbc, row++);
+        addFormField(pnlForm, "Điện thoại (*):", txtPhone = new JTextField(), gbc, row++);
+        addFormField(pnlForm, "Email:", txtEmail = new JTextField(), gbc, row++);
+        addFormField(pnlForm, "Chuyên môn:", txtSpecialty = new JTextField(), gbc, row++);
+        addFormField(pnlForm, "Ngày tuyển:", txtHireDate = new JTextField("dd/MM/yyyy"), gbc, row++);
+
+        // Buttons Panel
+        JPanel pnlButtons = new JPanel(new GridLayout(2, 2, 10, 10));
+        pnlButtons.setOpaque(false);
+        pnlButtons.setBorder(BorderFactory.createEmptyBorder(20, 0, 0, 0));
+
+        btnAdd = UIHelper.createStandardButton("Thêm", UIHelper.SUCCESS_COLOR, "✚");
+        btnUpdate = UIHelper.createStandardButton("Sửa", UIHelper.WARNING_COLOR, "✎");
+        btnDelete = UIHelper.createStandardButton("Xóa", UIHelper.DANGER_COLOR, "✘");
+        btnClear = UIHelper.createStandardButton("Mới", UIHelper.PRIMARY_COLOR, "⟲");
+
+        pnlButtons.add(btnAdd);
+        pnlButtons.add(btnUpdate);
+        pnlButtons.add(btnDelete);
+        pnlButtons.add(btnClear);
+
+        gbc.gridx = 0; gbc.gridy = row;
+        gbc.gridwidth = 2;
+        pnlForm.add(pnlButtons, gbc);
+
+        add(pnlForm, BorderLayout.WEST);
+
+        // --- Table (CENTER) ---
+        String[] columns = {"ID", "Họ tên", "Điện thoại", "Email", "Chuyên môn", "Ngày tuyển", "Trạng thái"};
+        tableModel = new DefaultTableModel(columns, 0) {
+            @Override public boolean isCellEditable(int r, int c) { return false; }
         };
-        table = new JTable(tableModel);
-        table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        table.getSelectionModel().addListSelectionListener(e -> {
-            if (!e.getValueIsAdjusting()) populateForm();
-        });
-        table.getColumnModel().getColumn(0).setMaxWidth(50);
-        return new JScrollPane(table);
+        tblTeacher = new JTable(tableModel);
+        setupTable(tblTeacher);
+        add(new JScrollPane(tblTeacher), BorderLayout.CENTER);
     }
 
-    private JPanel buildFormPanel() {
-        JPanel wrapper = new JPanel(new BorderLayout(4, 4));
-        wrapper.setBorder(BorderFactory.createTitledBorder("Thông tin giáo viên"));
+    private void addFormField(JPanel p, String label, JTextField tf, GridBagConstraints gbc, int r) {
+        gbc.gridx = 0; gbc.gridy = r; gbc.gridwidth = 1;
+        p.add(createFieldLabel(label), gbc);
+        gbc.gridx = 1;
+        p.add(tf, gbc);
+    }
 
-        JPanel grid = new JPanel(new GridLayout(2, 6, 6, 4));
-        txtId = new JTextField(); txtId.setEditable(false);
-        txtFullName = new JTextField();
-        txtPhone = new JTextField();
-        txtEmail = new JTextField();
-        txtSpecialty = new JTextField();
-        txtHireDate = new JTextField("dd/MM/yyyy");
-
-        grid.add(label("ID:")); grid.add(txtId);
-        grid.add(label("Họ tên (*):")); grid.add(txtFullName);
-        grid.add(label("Điện thoại (*):")); grid.add(txtPhone);
-        grid.add(label("Email:")); grid.add(txtEmail);
-        grid.add(label("Chuyên môn:")); grid.add(txtSpecialty);
-        grid.add(label("Ngày tuyển:")); grid.add(txtHireDate);
-
-        JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 4));
-        btnAdd = new JButton("➕ Thêm");
-        btnUpdate = new JButton("✏ Cập nhật");
-        btnDelete = new JButton("🗑 Xóa (Inactive)");
-        btnClear = new JButton("⬜ Xóa form");
-
+    @Override
+    protected void handleEvents() {
+        btnSearch.addActionListener(e -> doSearch());
+        btnReload.addActionListener(e -> loadTableData());
         btnAdd.addActionListener(e -> doAdd());
         btnUpdate.addActionListener(e -> doUpdate());
         btnDelete.addActionListener(e -> doDelete());
         btnClear.addActionListener(e -> clearForm());
 
-        btnPanel.add(btnAdd);
-        btnPanel.add(btnUpdate);
-        btnPanel.add(btnDelete);
-        btnPanel.add(btnClear);
-
-        wrapper.add(grid, BorderLayout.CENTER);
-        wrapper.add(btnPanel, BorderLayout.SOUTH);
-        return wrapper;
+        tblTeacher.getSelectionModel().addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) populateForm();
+        });
     }
 
-    private JLabel label(String text) {
-        return new JLabel(text);
+    @Override
+    protected void loadTableData() {
+        if (controller != null) renderTable(controller.getAllTeachers());
     }
 
-    private void loadTable(List<Teacher> list) {
+    private void renderTable(List<Teacher> list) {
         tableModel.setRowCount(0);
         for (Teacher t : list) {
             tableModel.addRow(new Object[]{
-                t.getTeacher_id(),
-                t.getFullName(),
-                t.getPhone(),
-                t.getEmail(),
-                t.getSpecialty(),
-                t.getHireDate() != null ? t.getHireDate().format(DATE_FMT) : "",
+                t.getTeacher_id(), t.getFullName(), t.getPhone(), t.getEmail(),
+                t.getSpecialty(), t.getHireDate() != null ? t.getHireDate().format(DATE_FMT) : "",
                 t.getStatus()
             });
         }
     }
 
+    private void doSearch() {
+        renderTable(controller.searchTeachers(txtSearch.getText()));
+    }
+
     private void populateForm() {
-        int row = table.getSelectedRow();
+        int row = tblTeacher.getSelectedRow();
         if (row < 0) return;
-        txtId.setText(tableModel.getValueAt(row, 0).toString());
         txtFullName.setText(tableModel.getValueAt(row, 1).toString());
         txtPhone.setText(tableModel.getValueAt(row, 2).toString());
         txtEmail.setText(tableModel.getValueAt(row, 3) != null ? tableModel.getValueAt(row, 3).toString() : "");
@@ -155,75 +150,55 @@ public class TeacherManagerFrame extends JFrame {
         txtHireDate.setText(tableModel.getValueAt(row, 5) != null ? tableModel.getValueAt(row, 5).toString() : "");
     }
 
-    private void doSearch() {
-        loadTable(controller.searchTeachers(txtSearch.getText()));
-    }
-
-    private LocalDate parseDate(String text) {
-        try {
-            if (text == null || text.isBlank()) return null;
-            return LocalDate.parse(text, DATE_FMT);
-        } catch (DateTimeParseException ex) {
-            throw new IllegalArgumentException("Ngày không hợp lệ, định dạng dd/MM/yyyy");
-        }
-    }
-
     private void doAdd() {
         try {
-            LocalDate hire = parseDate(txtHireDate.getText());
-            controller.addTeacher(txtFullName.getText(), txtPhone.getText(), txtEmail.getText(),
-                    txtSpecialty.getText(), hire);
+            LocalDate hire = txtHireDate.getText().equals("dd/MM/yyyy") ? null : LocalDate.parse(txtHireDate.getText(), DATE_FMT);
+            controller.addTeacher(txtFullName.getText(), txtPhone.getText(), txtEmail.getText(), txtSpecialty.getText(), hire);
             JOptionPane.showMessageDialog(this, "Thêm giáo viên thành công!");
             clearForm();
-            loadTable(controller.getAllTeachers());
+            loadTableData();
         } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Lỗi: " + ex.getMessage());
         }
     }
 
     private void doUpdate() {
-        if (txtId.getText().isBlank()) {
-            JOptionPane.showMessageDialog(this, "Vui lòng chọn giáo viên cần cập nhật.");
-            return;
-        }
+        int row = tblTeacher.getSelectedRow();
+        if (row < 0) return;
         try {
-            Teacher t = controller.getTeacherById(Long.valueOf(txtId.getText()));
+            Long id = (Long) tableModel.getValueAt(row, 0);
+            Teacher t = controller.getTeacherById(id);
             t.setFullName(txtFullName.getText());
             t.setPhone(txtPhone.getText());
             t.setEmail(txtEmail.getText());
             t.setSpecialty(txtSpecialty.getText());
-            t.setHireDate(parseDate(txtHireDate.getText()));
+            t.setHireDate(txtHireDate.getText().equals("dd/MM/yyyy") ? null : LocalDate.parse(txtHireDate.getText(), DATE_FMT));
             controller.updateTeacher(t);
             JOptionPane.showMessageDialog(this, "Cập nhật thành công!");
             clearForm();
-            loadTable(controller.getAllTeachers());
+            loadTableData();
         } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Lỗi: " + ex.getMessage());
         }
     }
 
     private void doDelete() {
-        if (txtId.getText().isBlank()) {
-            JOptionPane.showMessageDialog(this, "Vui lòng chọn giáo viên cần xóa.");
-            return;
-        }
-        int confirm = JOptionPane.showConfirmDialog(this, "Chắc chắn muốn đánh inactive giáo viên này?", "Xác nhận", JOptionPane.YES_NO_OPTION);
+        int row = tblTeacher.getSelectedRow();
+        if (row < 0) return;
+        int confirm = JOptionPane.showConfirmDialog(this, "Vô hiệu hóa giáo viên này?", "Xác nhận", JOptionPane.YES_NO_OPTION);
         if (confirm == JOptionPane.YES_OPTION) {
-            controller.deleteTeacher(Long.valueOf(txtId.getText()));
+            Long id = (Long) tableModel.getValueAt(row, 0);
+            controller.deleteTeacher(id);
             JOptionPane.showMessageDialog(this, "Đã đặt trạng thái Inactive.");
             clearForm();
-            loadTable(controller.getAllTeachers());
+            loadTableData();
         }
     }
 
     private void clearForm() {
-        txtId.setText("");
-        txtFullName.setText("");
-        txtPhone.setText("");
-        txtEmail.setText("");
-        txtSpecialty.setText("");
-        txtHireDate.setText("dd/MM/yyyy");
-        table.clearSelection();
+        txtFullName.setText(""); txtPhone.setText(""); txtEmail.setText("");
+        txtSpecialty.setText(""); txtHireDate.setText("dd/MM/yyyy");
+        tblTeacher.clearSelection();
     }
 
     public static void main(String[] args) {

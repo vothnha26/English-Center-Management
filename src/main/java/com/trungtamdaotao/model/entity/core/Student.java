@@ -40,6 +40,8 @@ public class Student {
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
+    public Student() {}
+
     // Getters and Setters
     public Long getStudent_id() {
         return student_id;
@@ -119,5 +121,10 @@ public class Student {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    @Override
+    public String toString() {
+        return fullName + " (" + (phone != null ? phone : (email != null ? email : "N/A")) + ")";
     }
 }

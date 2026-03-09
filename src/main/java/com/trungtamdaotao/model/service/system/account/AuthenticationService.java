@@ -28,26 +28,21 @@ public class AuthenticationService {
     public LoginResult login(String username, String password) throws Exception {
         UserAccount account = accountService.findByUsername(username);
         if (account == null) {
-            throw new Exception("Invalid username");
+            throw new Exception("Tên đăng nhập không tồn tại.");
         }
 
         String hashedPassword = hashPassword(password);
         if (!hashedPassword.equals(account.getPassword_hash())) {
-            throw new Exception("Invalid password");
+            throw new Exception("Mật khẩu không chính xác.");
         }
 
         boolean needChangePassword = false;
 
-        // If account is inactive, verify with EMAIL_VERIFICATION token
+        // Nếu mật khẩu khớp nhưng tài khoản chưa kích hoạt
+        // Tức là người dùng đang đăng nhập bằng mã OTP (mật khẩu tạm)
         if (!account.isIs_active()) {
-            Token emailVerificationToken = tokenService.findValidTokenByUserAndType(account, TokenType.EMAIL_VERIFICATION);
-            if (emailVerificationToken == null || !hashedPassword.equals(hashPassword(emailVerificationToken.getToken_value()))) {
-                throw new Exception("Account not verified. Please check your email for verification token.");
-            }
-            // Activate account
-            account.setIs_active(true);
-            accountService.updateAccount(account);
-            needChangePassword = true; // Need to change password after activation
+            // Đánh dấu cần đổi mật khẩu và kích hoạt
+            needChangePassword = true;
         }
 
         return new LoginResult(account, needChangePassword);
@@ -59,8 +54,8 @@ public class AuthenticationService {
             throw new Exception("Email not found");
         }
 
-        // Create RESET_PASSWORD token
-        Token token = tokenService.generateToken(account, TokenType.PASSWORD_RESET, 15); // 15 minutes
+        // Create RESET_PASSWORD token (24 hours = 1440 minutes)
+        Token token = tokenService.generateToken(account, TokenType.PASSWORD_RESET, 1440);
 
         // Send email with reset link or token
         String subject = "Password Reset Request";

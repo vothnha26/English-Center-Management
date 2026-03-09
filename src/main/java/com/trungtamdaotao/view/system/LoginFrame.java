@@ -75,33 +75,30 @@ public class LoginFrame extends JFrame {
 
             if (result.isNeedChangePassword()) {
                 // Show change password dialog, mandatory
+                JOptionPane.showMessageDialog(this, "Đây là lần đăng nhập đầu tiên hoặc bạn đang dùng mật khẩu tạm. Vui lòng đổi mật khẩu mới để kích hoạt tài khoản.");
                 ChangePasswordDialog dialog = new ChangePasswordDialog(this, account);
                 dialog.setVisible(true);
 
-                if (!dialog.isChanged()) {
-                    // Revert active = false
-                    account.setIs_active(false);
-                    var accountService = new AccountService(new AccountDAOImpl());
-                    accountService.updateAccount(account);
-                    JOptionPane.showMessageDialog(this, "Phải đặt mật khẩu mới để hoàn tất xác thực.");
-                    return;
+                if (dialog.isChanged()) {
+                    // Sau khi đổi mật khẩu thành công, kích hoạt tài khoản
+                    account.setIs_active(true);
+                    new AccountService(new AccountDAOImpl()).updateAccount(account);
+                    
+                    // Thu hồi toàn bộ token xác thực cũ
+                    new TokenService(new TokenDAOImpl()).revokeOldTokens(account, TokenType.EMAIL_VERIFICATION);
+                    
+                    JOptionPane.showMessageDialog(this, "Tài khoản đã được kích hoạt thành công!");
                 } else {
-                    // After change, mark token as used
-                    var tokenService = new TokenService(new TokenDAOImpl());
-                    var token = tokenService.findValidTokenByUserAndType(account, TokenType.EMAIL_VERIFICATION);
-                    if (token != null) {
-                        tokenService.markAsUsed(token.getToken_value());
-                    }
+                    // Nếu người dùng hủy đổi mật khẩu, không cho vào hệ thống
+                    JOptionPane.showMessageDialog(this, "Bạn phải đổi mật khẩu để hoàn tất kích hoạt tài khoản.");
+                    return;
                 }
             }
 
-            JOptionPane.showMessageDialog(this, "Đăng nhập thành công! Vai trò: " + account.getRole());
+            JOptionPane.showMessageDialog(this, "Đăng nhập thành công!");
 
-            // Mở main frame dựa trên role
-            if (account.getRole().toString().equals("ADMIN") || account.getRole().toString().equals("STAFF")) {
-                new StaffManagerFrame().setVisible(true);
-            }
-            // Có thể thêm cho teacher, student
+            // Mở MainMenuFrame chung cho hệ thống
+            new com.trungtamdaotao.view.MainMenuFrame().setVisible(true);
 
             dispose(); // Đóng login frame
         } catch (Exception ex) {

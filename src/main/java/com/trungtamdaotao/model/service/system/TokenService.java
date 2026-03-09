@@ -45,6 +45,21 @@ public class TokenService {
         tokenDAO.markAsUsed(tokenValue);
     }
 
+    /**
+     * Thu hồi (đánh dấu đã sử dụng) tất cả các token còn hiệu lực của một user theo loại.
+     */
+    public void revokeOldTokens(UserAccount user, TokenType type) {
+        try {
+            Token validToken = tokenDAO.findValidTokenByUserAndType(user, type);
+            while (validToken != null) {
+                tokenDAO.markAsUsed(validToken.getToken_value());
+                validToken = tokenDAO.findValidTokenByUserAndType(user, type);
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi khi thu hồi token cũ: " + e.getMessage());
+        }
+    }
+
     public Token findValidTokenByUserAndType(UserAccount userAccount, TokenType type) {
         return tokenDAO.findValidTokenByUserAndType(userAccount, type);
     }

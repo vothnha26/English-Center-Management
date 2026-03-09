@@ -44,6 +44,9 @@ public class ClassEntity {
     @Column(name = "start_date")
     private LocalDate startDate;
 
+    @Column(name = "end_date")
+    private LocalDate endDate;
+
     @Column(name = "max_student")
     private int maxStudent;
 
@@ -52,22 +55,81 @@ public class ClassEntity {
 
     public ClassEntity() {}
 
-    public Long getClassId()              { return class_id; }
-    public String getClassName()          { return className; }
-    public void setClassName(String n)    { this.className = n; }
-    public Course getCourse()             { return course; }
-    public void setCourse(Course c)       { this.course = c; }
-    public Teacher getTeacher()           { return teacher; }
-    public void setTeacher(Teacher t)     { this.teacher = t; }
-    public Room getRoom()                 { return room; }
-    public void setRoom(Room r)           { this.room = r; }
-    public LocalDate getStartDate()       { return startDate; }
-    public void setStartDate(LocalDate d) { this.startDate = d; }
-    public int getMaxStudent()            { return maxStudent; }
-    public void setMaxStudent(int m)      { this.maxStudent = m; }
-    public ClassStatus getStatus()        { return status; }
-    public void setStatus(ClassStatus s)  { this.status = s; }
+    // Getters and Setters
+    public Long getClass_id() {
+        return class_id;
+    }
+
+    public void setClass_id(Long class_id) {
+        this.class_id = class_id;
+    }
+
+    public String getClassName() {
+        return className;
+    }
+
+    public void setClassName(String className) {
+        this.className = className;
+    }
+
+    public Course getCourse() {
+        return course;
+    }
+
+    public void setCourse(Course course) {
+        this.course = course;
+    }
+
+    public Teacher getTeacher() {
+        return teacher;
+    }
+
+    public void setTeacher(Teacher teacher) {
+        this.teacher = teacher;
+    }
+
+    public Room getRoom() {
+        return room;
+    }
+
+    public void setRoom(Room room) {
+        this.room = room;
+    }
+
+    public LocalDate getStartDate() {
+        return startDate;
+    }
+
+    public void setStartDate(LocalDate startDate) {
+        this.startDate = startDate;
+    }
+
+    public LocalDate getEndDate() {
+        return endDate;
+    }
+
+    public void setEndDate(LocalDate endDate) {
+        this.endDate = endDate;
+    }
+
+    public int getMaxStudent() {
+        return maxStudent;
+    }
+
+    public void setMaxStudent(int maxStudent) {
+        this.maxStudent = maxStudent;
+    }
+
+    public ClassStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(ClassStatus status) {
+        this.status = status;
+    }
 
     @Override
-    public String toString() { return className; }
+    public String toString() {
+        return className;
+    }
 }
