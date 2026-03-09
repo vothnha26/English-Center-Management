@@ -5,7 +5,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import com.trungtamdaotao.model.entity.system.UserAccount;
-import com.trungtamdaotao.model.service.system.AuthenticationService;
+import com.trungtamdaotao.model.service.system.account.AuthenticationService;
 import com.trungtamdaotao.model.service.system.account.AccountService;
 import com.trungtamdaotao.model.service.system.TokenService;
 import com.trungtamdaotao.model.dao.impl.AccountDAOImpl;

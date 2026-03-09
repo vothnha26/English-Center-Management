@@ -1,10 +1,11 @@
-package com.trungtamdaotao.model.service.system;
+package com.trungtamdaotao.model.service.system.account;
 
-import com.trungtamdaotao.model.dao.system.IAccountDAO;
 import com.trungtamdaotao.model.entity.enums.TokenType;
 import com.trungtamdaotao.model.entity.system.Token;
 import com.trungtamdaotao.model.entity.system.UserAccount;
-import com.trungtamdaotao.model.service.system.account.AccountService;
+import com.trungtamdaotao.model.service.common.ICommon;
+import com.trungtamdaotao.model.service.common.EmailService;
+import com.trungtamdaotao.model.service.system.TokenService;
 import com.trungtamdaotao.util.EmailConfig;
 
 import java.security.MessageDigest;
@@ -15,7 +16,7 @@ public class AuthenticationService {
 
     private final AccountService accountService;
     private final TokenService tokenService;
-    private final EmailService emailService;
+    private final ICommon emailService;
 
     public AuthenticationService(AccountService accountService, TokenService tokenService) {
         this.accountService = accountService;

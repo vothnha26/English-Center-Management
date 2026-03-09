@@ -8,7 +8,7 @@ import com.trungtamdaotao.model.dao.student.IStudentDAO;
 import com.trungtamdaotao.model.entity.core.Student;
 import com.trungtamdaotao.model.entity.enums.AccountRole;
 import com.trungtamdaotao.model.entity.enums.Status;
-import com.trungtamdaotao.model.service.system.RegistrationService;
+import com.trungtamdaotao.model.service.system.account.RegistrationService;
 
 public class StudentService {
 

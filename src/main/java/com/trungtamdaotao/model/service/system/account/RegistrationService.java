@@ -1,9 +1,7 @@
-package com.trungtamdaotao.model.service.system;
+package com.trungtamdaotao.model.service.system.account;
 
 import com.trungtamdaotao.model.dao.impl.AccountDAOImpl;
 import com.trungtamdaotao.model.dao.impl.TokenDAOImpl;
-import com.trungtamdaotao.model.dao.system.IAccountDAO;
-import com.trungtamdaotao.model.dao.system.ITokenDAO;
 import com.trungtamdaotao.model.entity.core.Student;
 import com.trungtamdaotao.model.entity.core.Teacher;
 import com.trungtamdaotao.model.entity.enums.AccountRole;
@@ -11,8 +9,9 @@ import com.trungtamdaotao.model.entity.enums.TokenType;
 import com.trungtamdaotao.model.entity.system.Staff;
 import com.trungtamdaotao.model.entity.system.Token;
 import com.trungtamdaotao.model.entity.system.UserAccount;
-import com.trungtamdaotao.model.service.system.account.AccountService;
-import com.trungtamdaotao.util.DbManager;
+import com.trungtamdaotao.model.service.common.ICommon;
+import com.trungtamdaotao.model.service.common.EmailService;
+import com.trungtamdaotao.model.service.system.TokenService;
 import com.trungtamdaotao.util.EmailConfig;
 
 import java.security.MessageDigest;
@@ -23,9 +22,9 @@ public class RegistrationService {
 
     private final AccountService accountService;
     private final TokenService tokenService;
-    private final EmailService emailService;
+    private final ICommon emailService;
 
-    public RegistrationService(AccountService accountService, TokenService tokenService, EmailService emailService) {
+    public RegistrationService(AccountService accountService, TokenService tokenService, ICommon emailService) {
         this.accountService = accountService;
         this.tokenService = tokenService;
         this.emailService = emailService;

@@ -1,4 +1,4 @@
-package com.trungtamdaotao.model.service.system;
+package com.trungtamdaotao.model.service.system.account;
 
 import com.trungtamdaotao.model.entity.system.UserAccount;
 

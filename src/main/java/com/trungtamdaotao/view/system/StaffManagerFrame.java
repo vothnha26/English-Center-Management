@@ -23,7 +23,7 @@ import com.trungtamdaotao.controller.system.StaffController;
 import com.trungtamdaotao.model.entity.enums.StaffRole;
 import com.trungtamdaotao.model.entity.system.Staff;
 import com.trungtamdaotao.model.service.system.account.AccountService;
-import com.trungtamdaotao.model.service.system.RegistrationService;
+import com.trungtamdaotao.model.service.system.account.RegistrationService;
 import com.trungtamdaotao.model.dao.impl.AccountDAOImpl;
 
 /**

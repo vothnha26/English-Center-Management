@@ -1,17 +1,17 @@
-package com.trungtamdaotao.model.service.system;
+package com.trungtamdaotao.model.service.common;
 
 import jakarta.mail.*;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
 import java.util.Properties;
 
-public class EmailService {
+public class EmailService implements ICommon {
 
     private final String smtpHost;
     private final String smtpPort;
     private final String username;
     private final String password;
-    private final boolean mockMode; // Mock mode: chỉ print email ra console
+    private final boolean mockMode;
 
     public EmailService(String smtpHost, String smtpPort, String username, String password) {
         this(smtpHost, smtpPort, username, password, false);

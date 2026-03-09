@@ -8,7 +8,7 @@ import com.trungtamdaotao.model.entity.enums.AccountRole;
 import com.trungtamdaotao.model.entity.enums.StaffRole;
 import com.trungtamdaotao.model.entity.enums.Status;
 import com.trungtamdaotao.model.entity.system.Staff;
-import com.trungtamdaotao.model.entity.system.UserAccount;
+import com.trungtamdaotao.model.service.system.account.RegistrationService;
 
 public class StaffService {
 

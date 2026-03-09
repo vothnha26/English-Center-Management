@@ -2,7 +2,7 @@ package com.trungtamdaotao.view.system;
 
 import javax.swing.*;
 import java.awt.*;
-import com.trungtamdaotao.model.service.system.AuthenticationService;
+import com.trungtamdaotao.model.service.system.account.AuthenticationService;
 import com.trungtamdaotao.model.service.system.account.AccountService;
 import com.trungtamdaotao.model.service.system.TokenService;
 import com.trungtamdaotao.model.dao.impl.AccountDAOImpl;
