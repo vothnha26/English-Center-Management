@@ -2,10 +2,13 @@ package com.trungtamdaotao.view.academic;
 
 import com.trungtamdaotao.controller.academic.CourseController;
 import com.trungtamdaotao.model.entity.core.Course;
+import com.trungtamdaotao.model.entity.enums.AccountRole;
 import com.trungtamdaotao.model.entity.enums.CourseLevel;
 import com.trungtamdaotao.model.entity.enums.DurationUnit;
+import com.trungtamdaotao.model.entity.enums.StaffRole;
 import com.trungtamdaotao.model.entity.enums.Status;
 import com.trungtamdaotao.util.UIHelper;
+import com.trungtamdaotao.util.security.UserSession;
 import com.trungtamdaotao.view.common.BaseManagerFrame;
 
 import javax.swing.*;
@@ -33,7 +36,9 @@ public class CourseManagerFrame extends BaseManagerFrame {
     private Course selectedCourse;
 
     public CourseManagerFrame() {
-        super("Quản lý Khóa học");
+        super("Quản lý Khóa học", 
+              new AccountRole[]{AccountRole.ADMIN, AccountRole.STAFF}, 
+              new StaffRole[]{StaffRole.MANAGER, StaffRole.CONSULTANT});
         this.controller = new CourseController();
         loadTableData();
     }
@@ -128,7 +133,11 @@ public class CourseManagerFrame extends BaseManagerFrame {
         
         pnlButtons.add(btnAdd);
         pnlButtons.add(btnUpdate);
-        pnlButtons.add(btnDelete);
+        
+        if (UserSession.getPermissions().canDelete()) {
+            pnlButtons.add(btnDelete);
+        }
+        
         pnlButtons.add(btnClear);
         
         gbc.gridx = 0; gbc.gridy = row;
@@ -161,7 +170,9 @@ public class CourseManagerFrame extends BaseManagerFrame {
         btnReload.addActionListener(e -> loadTableData());
         btnAdd.addActionListener(e -> addCourse());
         btnUpdate.addActionListener(e -> updateCourse());
-        btnDelete.addActionListener(e -> deleteCourse());
+        if (btnDelete.getParent() != null) {
+            btnDelete.addActionListener(e -> deleteCourse());
+        }
         btnClear.addActionListener(e -> clearForm());
         
         tblCourse.getSelectionModel().addListSelectionListener(e -> {

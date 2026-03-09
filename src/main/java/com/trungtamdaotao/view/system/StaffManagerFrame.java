@@ -3,6 +3,7 @@ package com.trungtamdaotao.view.system;
 import com.trungtamdaotao.controller.system.StaffController;
 import com.trungtamdaotao.model.dao.impl.AccountDAOImpl;
 import com.trungtamdaotao.model.entity.enums.StaffRole;
+import com.trungtamdaotao.model.entity.enums.AccountRole;
 import com.trungtamdaotao.model.entity.system.Staff;
 import com.trungtamdaotao.model.service.system.account.AccountService;
 import com.trungtamdaotao.util.UIHelper;
@@ -26,7 +27,9 @@ public class StaffManagerFrame extends BaseManagerFrame {
     private JButton btnAdd, btnUpdate, btnDelete, btnClear, btnSearch, btnReload, btnInactiveAccount, btnSendVerify;
 
     public StaffManagerFrame() {
-        super("Quản lý Nhân viên");
+        super("Quản lý Nhân viên", 
+              new AccountRole[]{AccountRole.ADMIN, AccountRole.STAFF}, 
+              new StaffRole[]{StaffRole.MANAGER});
         this.controller = new StaffController();
         this.accountService = new AccountService(new AccountDAOImpl());
         loadTableData();

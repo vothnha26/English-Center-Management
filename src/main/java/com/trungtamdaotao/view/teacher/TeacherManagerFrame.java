@@ -2,7 +2,10 @@ package com.trungtamdaotao.view.teacher;
 
 import com.trungtamdaotao.controller.teacher.TeacherController;
 import com.trungtamdaotao.model.entity.core.Teacher;
+import com.trungtamdaotao.model.entity.enums.AccountRole;
+import com.trungtamdaotao.model.entity.enums.StaffRole;
 import com.trungtamdaotao.util.UIHelper;
+import com.trungtamdaotao.util.security.UserSession;
 import com.trungtamdaotao.view.common.BaseManagerFrame;
 
 import javax.swing.*;
@@ -24,7 +27,9 @@ public class TeacherManagerFrame extends BaseManagerFrame {
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     public TeacherManagerFrame() {
-        super("Quản lý Giáo viên");
+        super("Quản lý Giáo viên", 
+              new AccountRole[]{AccountRole.ADMIN, AccountRole.STAFF}, 
+              new StaffRole[]{StaffRole.MANAGER});
         this.controller = new TeacherController();
         loadTableData();
     }
@@ -80,7 +85,12 @@ public class TeacherManagerFrame extends BaseManagerFrame {
 
         pnlButtons.add(btnAdd);
         pnlButtons.add(btnUpdate);
-        pnlButtons.add(btnDelete);
+        
+        // Phân quyền xóa
+        if (UserSession.getPermissions().canDelete()) {
+            pnlButtons.add(btnDelete);
+        }
+        
         pnlButtons.add(btnClear);
 
         gbc.gridx = 0; gbc.gridy = row;
@@ -112,7 +122,9 @@ public class TeacherManagerFrame extends BaseManagerFrame {
         btnReload.addActionListener(e -> loadTableData());
         btnAdd.addActionListener(e -> doAdd());
         btnUpdate.addActionListener(e -> doUpdate());
-        btnDelete.addActionListener(e -> doDelete());
+        if (btnDelete.getParent() != null) {
+            btnDelete.addActionListener(e -> doDelete());
+        }
         btnClear.addActionListener(e -> clearForm());
 
         tblTeacher.getSelectionModel().addListSelectionListener(e -> {

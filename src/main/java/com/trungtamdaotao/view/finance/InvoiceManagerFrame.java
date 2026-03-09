@@ -3,6 +3,8 @@ package com.trungtamdaotao.view.finance;
 import com.trungtamdaotao.controller.finance.FinanceController;
 import com.trungtamdaotao.controller.student.StudentController;
 import com.trungtamdaotao.model.entity.core.Student;
+import com.trungtamdaotao.model.entity.enums.AccountRole;
+import com.trungtamdaotao.model.entity.enums.StaffRole;
 import com.trungtamdaotao.model.entity.enums.InvoiceStatus;
 import com.trungtamdaotao.model.entity.enums.PaymentMethod;
 import com.trungtamdaotao.model.entity.finance.Invoice;
@@ -31,7 +33,9 @@ public class InvoiceManagerFrame extends BaseManagerFrame {
     private JButton btnFilter, btnNewInvoice, btnCancelInv, btnReload, btnPay;
 
     public InvoiceManagerFrame() {
-        super("Quản lý Hóa đơn & Thanh toán");
+        super("Quản lý Hóa đơn & Thanh toán", 
+              new AccountRole[]{AccountRole.ADMIN, AccountRole.STAFF}, 
+              new StaffRole[]{StaffRole.MANAGER, StaffRole.ACCOUNTANT});
         this.financeCtrl = new FinanceController();
         this.studentCtrl = new StudentController();
         loadStudentCombo();

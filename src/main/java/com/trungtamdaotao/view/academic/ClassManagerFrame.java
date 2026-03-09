@@ -9,9 +9,12 @@ import com.trungtamdaotao.model.dao.teacher.ITeacherDAO;
 import com.trungtamdaotao.model.entity.academic.ClassEntity;
 import com.trungtamdaotao.model.entity.core.Course;
 import com.trungtamdaotao.model.entity.core.Teacher;
+import com.trungtamdaotao.model.entity.enums.AccountRole;
 import com.trungtamdaotao.model.entity.enums.ClassStatus;
+import com.trungtamdaotao.model.entity.enums.StaffRole;
 import com.trungtamdaotao.model.entity.operations.Room;
 import com.trungtamdaotao.util.UIHelper;
+import com.trungtamdaotao.util.security.UserSession;
 import com.trungtamdaotao.view.common.BaseManagerFrame;
 
 import javax.swing.*;
@@ -47,7 +50,9 @@ public class ClassManagerFrame extends BaseManagerFrame {
     private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     public ClassManagerFrame() {
-        super("Quản lý Lớp học");
+        super("Quản lý Lớp học", 
+              new AccountRole[]{AccountRole.ADMIN, AccountRole.STAFF}, 
+              new StaffRole[]{StaffRole.MANAGER, StaffRole.CONSULTANT});
         this.classController = new ClassController();
         this.courseController = new CourseController();
         this.teacherDAO = new TeacherDAOImpl();
@@ -140,7 +145,11 @@ public class ClassManagerFrame extends BaseManagerFrame {
         
         pnlButtons.add(btnAdd);
         pnlButtons.add(btnUpdate);
-        pnlButtons.add(btnDelete);
+        
+        if (UserSession.getPermissions().canDelete()) {
+            pnlButtons.add(btnDelete);
+        }
+        
         pnlButtons.add(btnClear);
         
         gbc.gridx = 0; gbc.gridy = row;
@@ -173,7 +182,9 @@ public class ClassManagerFrame extends BaseManagerFrame {
         btnReload.addActionListener(e -> loadTableData());
         btnAdd.addActionListener(e -> addClass());
         btnUpdate.addActionListener(e -> updateClass());
-        btnDelete.addActionListener(e -> deleteClass());
+        if (btnDelete.getParent() != null) {
+            btnDelete.addActionListener(e -> deleteClass());
+        }
         btnClear.addActionListener(e -> clearForm());
         
         tblClass.getSelectionModel().addListSelectionListener(e -> {

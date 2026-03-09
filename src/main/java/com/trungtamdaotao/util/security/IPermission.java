@@ -1,7 +1,13 @@
 package com.trungtamdaotao.util.security;
 
+/**
+ * Giao diện định nghĩa các quyền hạn trong hệ thống.
+ * Đảm bảo tính trừu tượng (SOLID).
+ */
 public interface IPermission {
-    boolean canManageSystem();    // Chỉ Admin
-    boolean canManageEnrollment(); // Admin hoặc Staff (Consultant)
-    boolean canInputGrades();     // Admin hoặc Teacher
+    boolean canDelete();
+    boolean canManageStaff();
+    boolean canManageFinancials();
+    boolean canManageAcademic();
+    boolean canAccessModule(String moduleName);
 }

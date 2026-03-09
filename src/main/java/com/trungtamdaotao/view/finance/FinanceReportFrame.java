@@ -1,6 +1,8 @@
 package com.trungtamdaotao.view.finance;
 
 import com.trungtamdaotao.controller.finance.FinanceController;
+import com.trungtamdaotao.model.entity.enums.AccountRole;
+import com.trungtamdaotao.model.entity.enums.StaffRole;
 import com.trungtamdaotao.model.entity.finance.Payment;
 import com.trungtamdaotao.util.UIHelper;
 import com.trungtamdaotao.view.common.BaseManagerFrame;
@@ -23,7 +25,9 @@ public class FinanceReportFrame extends BaseManagerFrame {
     private JLabel lblTotalYear, lblTotalAll;
 
     public FinanceReportFrame() {
-        super("Báo cáo Tài chính");
+        super("Báo cáo Tài chính", 
+              new AccountRole[]{AccountRole.ADMIN, AccountRole.STAFF}, 
+              new StaffRole[]{StaffRole.MANAGER, StaffRole.ACCOUNTANT});
         this.controller = new FinanceController();
         loadAllPayments();
         doLoadMonthly();

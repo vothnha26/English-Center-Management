@@ -2,9 +2,12 @@ package com.trungtamdaotao.view.student;
 
 import com.trungtamdaotao.controller.student.StudentController;
 import com.trungtamdaotao.model.entity.core.Student;
+import com.trungtamdaotao.model.entity.enums.AccountRole;
+import com.trungtamdaotao.model.entity.enums.StaffRole;
 import com.trungtamdaotao.model.entity.enums.Gender;
 import com.trungtamdaotao.model.entity.enums.Status;
 import com.trungtamdaotao.util.UIHelper;
+import com.trungtamdaotao.util.security.UserSession;
 import com.trungtamdaotao.view.common.BaseManagerFrame;
 
 import javax.swing.*;
@@ -28,7 +31,9 @@ public class StudentManagerFrame extends BaseManagerFrame {
     private JButton btnAdd, btnUpdate, btnDelete, btnClear, btnSearch, btnReload;
 
     public StudentManagerFrame() {
-        super("Quản lý Học viên");
+        super("Quản lý Học viên", 
+              new AccountRole[]{AccountRole.ADMIN, AccountRole.STAFF}, 
+              new StaffRole[]{StaffRole.MANAGER, StaffRole.CONSULTANT, StaffRole.ACCOUNTANT});
         this.studentController = new StudentController();
         loadTableData(); // Đảm bảo load dữ liệu sau khi controller được khởi tạo
     }
@@ -99,7 +104,12 @@ public class StudentManagerFrame extends BaseManagerFrame {
         
         pnlButtons.add(btnAdd);
         pnlButtons.add(btnUpdate);
-        pnlButtons.add(btnDelete);
+        
+        // Chỉ hiển thị nút Xóa nếu có quyền
+        if (UserSession.getPermissions().canDelete()) {
+            pnlButtons.add(btnDelete);
+        }
+        
         pnlButtons.add(btnClear);
         
         gbc.gridx = 0; gbc.gridy = row;

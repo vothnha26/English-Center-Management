@@ -72,6 +72,9 @@ public class LoginFrame extends JFrame {
         try {
             var result = authService.login(username, password);
             UserAccount account = result.getAccount();
+            
+            // Khởi tạo phiên làm việc cho người dùng vừa đăng nhập
+            com.trungtamdaotao.util.security.UserSession.login(account);
 
             if (result.isNeedChangePassword()) {
                 // Show change password dialog, mandatory

@@ -1,6 +1,10 @@
 package com.trungtamdaotao.view;
 
+import com.trungtamdaotao.model.entity.enums.AccountRole;
+import com.trungtamdaotao.model.entity.enums.StaffRole;
 import com.trungtamdaotao.util.UIHelper;
+import com.trungtamdaotao.util.security.IPermission;
+import com.trungtamdaotao.util.security.UserSession;
 import com.trungtamdaotao.view.academic.AttendanceManagerFrame;
 import com.trungtamdaotao.view.academic.ClassManagerFrame;
 import com.trungtamdaotao.view.academic.CourseManagerFrame;
@@ -18,8 +22,8 @@ import java.awt.*;
 public class MainMenuFrame extends JFrame {
 
     public MainMenuFrame() {
-        setTitle("MIS English Center - Hệ thống quản lý trung tâm ngoại ngữ");
-        setSize(1000, 700);
+        setTitle("MIS English Center - Dashboard");
+        setSize(1100, 750);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         initComponents();
@@ -34,7 +38,9 @@ public class MainMenuFrame extends JFrame {
         pnlHeader.setBackground(UIHelper.PRIMARY_COLOR);
         pnlHeader.setPreferredSize(new Dimension(0, 80));
         
-        JLabel lblTitle = new JLabel("HỆ THỐNG QUẢN LÝ TRUNG TÂM NGOẠI NGỮ");
+        String welcomeMsg = "HỆ THỐNG QUẢN LÝ TRUNG TÂM NGOẠI NGỮ - Xin chào, " + 
+                           (UserSession.getCurrentUser() != null ? UserSession.getCurrentUser().getUsername() : "Guest");
+        JLabel lblTitle = new JLabel(welcomeMsg);
         lblTitle.setFont(UIHelper.TITLE_FONT);
         lblTitle.setForeground(Color.WHITE);
         lblTitle.setHorizontalAlignment(SwingConstants.CENTER);
@@ -43,33 +49,67 @@ public class MainMenuFrame extends JFrame {
         add(pnlHeader, BorderLayout.NORTH);
 
         // --- Dashboard Menu (CENTER) ---
-        JPanel pnlDashboard = new JPanel(new GridLayout(3, 3, 20, 20));
+        JPanel pnlDashboard = new JPanel(new GridLayout(0, 3, 20, 20)); // Dynamic rows
         pnlDashboard.setBackground(UIHelper.BACKGROUND_COLOR);
         pnlDashboard.setBorder(new EmptyBorder(30, 30, 30, 30));
 
-        pnlDashboard.add(createMenuButton("Học viên", "👥", e -> new StudentManagerFrame().setVisible(true)));
-        pnlDashboard.add(createMenuButton("Giáo viên", "👨‍🏫", e -> new TeacherManagerFrame().setVisible(true)));
-        pnlDashboard.add(createMenuButton("Lớp học", "🏫", e -> new ClassManagerFrame().setVisible(true)));
-        
-        pnlDashboard.add(createMenuButton("Khóa học", "📚", e -> new CourseManagerFrame().setVisible(true)));
-        pnlDashboard.add(createMenuButton("Lịch học", "📅", e -> new ScheduleManagerFrame().setVisible(true)));
-        pnlDashboard.add(createMenuButton("Điểm danh", "📝", e -> new AttendanceManagerFrame().setVisible(true)));
-        
-        pnlDashboard.add(createMenuButton("Tài chính", "💰", e -> new InvoiceManagerFrame().setVisible(true)));
-        pnlDashboard.add(createMenuButton("Báo cáo", "📊", e -> new FinanceReportFrame().setVisible(true)));
-        pnlDashboard.add(createMenuButton("Nhân sự", "👮", e -> new StaffManagerFrame().setVisible(true)));
+        // Phân quyền hiển thị các nút
+        addAuthorizedButtons(pnlDashboard);
 
-        add(pnlDashboard, BorderLayout.CENTER);
+        add(new JScrollPane(pnlDashboard), BorderLayout.CENTER);
 
         // --- Footer (SOUTH) ---
-        JPanel pnlFooter = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        JPanel pnlFooter = new JPanel(new FlowLayout(FlowLayout.RIGHT, 15, 10));
         pnlFooter.setBackground(UIHelper.PRIMARY_COLOR);
         
+        JLabel lblRole = new JLabel("Vai trò: " + getRoleDisplayName());
+        lblRole.setForeground(Color.WHITE);
+        lblRole.setFont(UIHelper.BOLD_FONT);
+        pnlFooter.add(lblRole);
+        pnlFooter.add(Box.createHorizontalStrut(20));
+
+        JButton btnLogout = UIHelper.createStandardButton("Đăng xuất", UIHelper.WARNING_COLOR, "↩");
+        btnLogout.addActionListener(e -> logout());
+        pnlFooter.add(btnLogout);
+
         JButton btnExit = UIHelper.createStandardButton("Thoát", UIHelper.DANGER_COLOR, "🚪");
         btnExit.addActionListener(e -> exitApplication());
         pnlFooter.add(btnExit);
         
         add(pnlFooter, BorderLayout.SOUTH);
+    }
+
+    private void addAuthorizedButtons(JPanel pnl) {
+        IPermission p = UserSession.getPermissions();
+
+        // Module Học thuật
+        if (p.canManageAcademic()) {
+            pnl.add(createMenuButton("Học viên", "👥", e -> new StudentManagerFrame().setVisible(true)));
+            pnl.add(createMenuButton("Lớp học", "🏫", e -> new ClassManagerFrame().setVisible(true)));
+            pnl.add(createMenuButton("Khóa học", "📚", e -> new CourseManagerFrame().setVisible(true)));
+            pnl.add(createMenuButton("Lịch học", "📅", e -> new ScheduleManagerFrame().setVisible(true)));
+            pnl.add(createMenuButton("Điểm danh", "📝", e -> new AttendanceManagerFrame().setVisible(true)));
+        }
+
+        // Module Giáo viên & Nhân sự
+        if (p.canManageStaff()) {
+            pnl.add(createMenuButton("Giáo viên", "👨‍🏫", e -> new TeacherManagerFrame().setVisible(true)));
+            pnl.add(createMenuButton("Nhân sự", "👮", e -> new StaffManagerFrame().setVisible(true)));
+        }
+
+        // Module Tài chính
+        if (p.canManageFinancials()) {
+            pnl.add(createMenuButton("Tài chính", "💰", e -> new InvoiceManagerFrame().setVisible(true)));
+            pnl.add(createMenuButton("Báo cáo", "📊", e -> new FinanceReportFrame().setVisible(true)));
+        }
+    }
+
+    private String getRoleDisplayName() {
+        if (UserSession.isAdmin()) return "Administrator";
+        if (UserSession.isStaff()) return "Staff (" + UserSession.getStaffRole() + ")";
+        if (UserSession.isTeacher()) return "Teacher";
+        if (UserSession.isStudent()) return "Student";
+        return "Unknown";
     }
 
     private JButton createMenuButton(String text, String icon, java.awt.event.ActionListener listener) {
@@ -82,21 +122,21 @@ public class MainMenuFrame extends JFrame {
         btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btn.addActionListener(listener);
         
-        // Hover effect
         btn.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseEntered(java.awt.event.MouseEvent evt) {
-                btn.setBackground(new Color(236, 240, 241));
-            }
-            public void mouseExited(java.awt.event.MouseEvent evt) {
-                btn.setBackground(Color.WHITE);
-            }
+            public void mouseEntered(java.awt.event.MouseEvent evt) { btn.setBackground(new Color(236, 240, 241)); }
+            public void mouseExited(java.awt.event.MouseEvent evt) { btn.setBackground(Color.WHITE); }
         });
-        
         return btn;
     }
 
+    private void logout() {
+        UserSession.logout();
+        new com.trungtamdaotao.view.system.LoginFrame().setVisible(true);
+        this.dispose();
+    }
+
     private void exitApplication() {
-        if (JOptionPane.showConfirmDialog(this, "Bạn có chắc muốn thoát?", "Xác nhận", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+        if (JOptionPane.showConfirmDialog(this, "Thoát ứng dụng?", "Xác nhận", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
             System.exit(0);
         }
     }
