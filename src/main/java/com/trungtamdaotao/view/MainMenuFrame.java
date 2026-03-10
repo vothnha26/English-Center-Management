@@ -1,25 +1,30 @@
 package com.trungtamdaotao.view;
 
 import com.trungtamdaotao.util.UIHelper;
-import com.trungtamdaotao.view.academic.AttendanceManagerFrame;
-import com.trungtamdaotao.view.academic.ClassManagerFrame;
-import com.trungtamdaotao.view.academic.CourseManagerFrame;
-import com.trungtamdaotao.view.academic.ScheduleManagerFrame;
-import com.trungtamdaotao.view.finance.FinanceReportFrame;
-import com.trungtamdaotao.view.finance.InvoiceManagerFrame;
-import com.trungtamdaotao.view.student.StudentManagerFrame;
-import com.trungtamdaotao.view.system.StaffManagerFrame;
-import com.trungtamdaotao.view.teacher.TeacherManagerFrame;
+import com.trungtamdaotao.view.student.StudentManagerPanel;
+import com.trungtamdaotao.view.teacher.TeacherManagerPanel;
+import com.trungtamdaotao.view.academic.AttendanceManagerPanel;
+import com.trungtamdaotao.view.academic.ScheduleManagerPanel;
+import com.trungtamdaotao.view.system.StaffManagerPanel;
+import com.trungtamdaotao.view.finance.InvoiceManagerPanel;
 
+import net.miginfocom.swing.MigLayout;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 
+/**
+ * Main Frame Hoàn thiện - Single Window Architecture.
+ */
 public class MainMenuFrame extends JFrame {
 
+    private JPanel pnlContent;
+    private JLabel lblPageTitle;
+    private CardLayout cardLayout;
+
     public MainMenuFrame() {
-        setTitle("MIS English Center - Hệ thống quản lý trung tâm ngoại ngữ");
-        setSize(1000, 700);
+        setTitle("HỆ THỐNG QUẢN LÝ TRUNG TÂM ANH NGỮ");
+        setSize(1450, 900);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         initComponents();
@@ -27,81 +32,112 @@ public class MainMenuFrame extends JFrame {
 
     private void initComponents() {
         setLayout(new BorderLayout());
-        getContentPane().setBackground(UIHelper.BACKGROUND_COLOR);
 
-        // --- Header (NORTH) ---
-        JPanel pnlHeader = new JPanel(new BorderLayout());
-        pnlHeader.setBackground(UIHelper.PRIMARY_COLOR);
-        pnlHeader.setPreferredSize(new Dimension(0, 80));
-        
-        JLabel lblTitle = new JLabel("HỆ THỐNG QUẢN LÝ TRUNG TÂM NGOẠI NGỮ");
-        lblTitle.setFont(UIHelper.TITLE_FONT);
-        lblTitle.setForeground(Color.WHITE);
-        lblTitle.setHorizontalAlignment(SwingConstants.CENTER);
-        pnlHeader.add(lblTitle, BorderLayout.CENTER);
-        
-        add(pnlHeader, BorderLayout.NORTH);
+        // --- Sidebar ---
+        add(createSidebar(), BorderLayout.WEST);
 
-        // --- Dashboard Menu (CENTER) ---
-        JPanel pnlDashboard = new JPanel(new GridLayout(3, 3, 20, 20));
-        pnlDashboard.setBackground(UIHelper.BACKGROUND_COLOR);
-        pnlDashboard.setBorder(new EmptyBorder(30, 30, 30, 30));
+        // --- Main Area ---
+        JPanel pnlMainArea = new JPanel(new BorderLayout());
+        pnlMainArea.setBackground(UIHelper.BACKGROUND_COLOR);
 
-        pnlDashboard.add(createMenuButton("Học viên", "👥", e -> new StudentManagerFrame().setVisible(true)));
-        pnlDashboard.add(createMenuButton("Giáo viên", "👨‍🏫", e -> new TeacherManagerFrame().setVisible(true)));
-        pnlDashboard.add(createMenuButton("Lớp học", "🏫", e -> new ClassManagerFrame().setVisible(true)));
-        
-        pnlDashboard.add(createMenuButton("Khóa học", "📚", e -> new CourseManagerFrame().setVisible(true)));
-        pnlDashboard.add(createMenuButton("Lịch học", "📅", e -> new ScheduleManagerFrame().setVisible(true)));
-        pnlDashboard.add(createMenuButton("Điểm danh", "📝", e -> new AttendanceManagerFrame().setVisible(true)));
-        
-        pnlDashboard.add(createMenuButton("Tài chính", "💰", e -> new InvoiceManagerFrame().setVisible(true)));
-        pnlDashboard.add(createMenuButton("Báo cáo", "📊", e -> new FinanceReportFrame().setVisible(true)));
-        pnlDashboard.add(createMenuButton("Nhân sự", "👮", e -> new StaffManagerFrame().setVisible(true)));
+        pnlMainArea.add(createHeader(), BorderLayout.NORTH);
 
-        add(pnlDashboard, BorderLayout.CENTER);
+        cardLayout = new CardLayout();
+        pnlContent = new JPanel(cardLayout);
+        pnlContent.setOpaque(false);
+        pnlContent.setBorder(new EmptyBorder(20, 20, 20, 20));
 
-        // --- Footer (SOUTH) ---
-        JPanel pnlFooter = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        pnlFooter.setBackground(UIHelper.PRIMARY_COLOR);
-        
-        JButton btnExit = UIHelper.createStandardButton("Thoát", UIHelper.DANGER_COLOR, "🚪");
-        btnExit.addActionListener(e -> exitApplication());
-        pnlFooter.add(btnExit);
-        
-        add(pnlFooter, BorderLayout.SOUTH);
+        // Đăng ký toàn bộ Panel
+        pnlContent.add(createDashboardPanel(), "Dashboard");
+        pnlContent.add(new StudentManagerPanel(), "Students");
+        pnlContent.add(new TeacherManagerPanel(), "Teachers");
+        pnlContent.add(new ScheduleManagerPanel(), "Schedules");
+        pnlContent.add(new AttendanceManagerPanel(), "Attendance");
+        pnlContent.add(new StaffManagerPanel(), "Staff");
+        pnlContent.add(new InvoiceManagerPanel(), "Finance");
+
+        pnlMainArea.add(pnlContent, BorderLayout.CENTER);
+        add(pnlMainArea, BorderLayout.CENTER);
     }
 
-    private JButton createMenuButton(String text, String icon, java.awt.event.ActionListener listener) {
-        JButton btn = new JButton("<html><center><font size='10'>" + icon + "</font><br><br><font size='5'>" + text + "</font></center></html>");
-        btn.setFont(UIHelper.BOLD_FONT);
-        btn.setBackground(Color.WHITE);
-        btn.setForeground(UIHelper.PRIMARY_COLOR);
-        btn.setFocusPainted(false);
-        btn.setBorder(BorderFactory.createLineBorder(UIHelper.PRIMARY_COLOR, 2));
-        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        btn.addActionListener(listener);
-        
-        // Hover effect
-        btn.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseEntered(java.awt.event.MouseEvent evt) {
-                btn.setBackground(new Color(236, 240, 241));
-            }
-            public void mouseExited(java.awt.event.MouseEvent evt) {
-                btn.setBackground(Color.WHITE);
-            }
+    private JPanel createSidebar() {
+        JPanel sidebar = new JPanel(new MigLayout("wrap 1, inset 0, fillx", "[fill]", "[]20[]2[]10[]2[]2[]2[]2[]10[]2[]2[]push[]20"));
+        sidebar.setBackground(UIHelper.SIDEBAR_COLOR);
+        sidebar.setPreferredSize(new Dimension(280, 0));
+
+        JLabel lblLogo = new JLabel("MIS ENGLISH CENTER");
+        lblLogo.setFont(new Font("Segoe UI", Font.BOLD, 22));
+        lblLogo.setForeground(Color.WHITE);
+        lblLogo.setBorder(new EmptyBorder(30, 25, 20, 25));
+        sidebar.add(lblLogo);
+
+        sidebar.add(createSidebarButton("TỔNG QUAN", "Dashboard", "\u25A3"));
+
+        sidebar.add(createGroupLabel("QUẢN LÝ HỌC VỤ"));
+        sidebar.add(createSidebarButton("Học viên", "Students", "\u25B8"));
+        sidebar.add(createSidebarButton("Giáo viên", "Teachers", "\u25B8"));
+        sidebar.add(createSidebarButton("Lịch học", "Schedules", "\u25B8"));
+        sidebar.add(createSidebarButton("Điểm danh", "Attendance", "\u25B8"));
+
+        sidebar.add(createGroupLabel("TÀI CHÍNH & HỆ THỐNG"));
+        sidebar.add(createSidebarButton("Hóa đơn", "Finance", "\u25B8"));
+        sidebar.add(createSidebarButton("Nhân sự", "Staff", "\u25B8"));
+
+        JButton btnLogout = UIHelper.createSidebarButton("ĐĂNG XUẤT", "\u2716");
+        btnLogout.addActionListener(e -> System.exit(0));
+        sidebar.add(btnLogout);
+
+        return sidebar;
+    }
+
+    private JLabel createGroupLabel(String text) {
+        JLabel lbl = new JLabel(text);
+        lbl.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        lbl.setForeground(new Color(255, 255, 255, 120));
+        lbl.setBorder(new EmptyBorder(15, 25, 5, 25));
+        return lbl;
+    }
+
+    private JButton createSidebarButton(String text, String cardName, String icon) {
+        JButton btn = UIHelper.createSidebarButton(text, icon);
+        btn.addActionListener(e -> {
+            lblPageTitle.setText(text.toUpperCase());
+            cardLayout.show(pnlContent, cardName);
         });
-        
         return btn;
     }
 
-    private void exitApplication() {
-        if (JOptionPane.showConfirmDialog(this, "Bạn có chắc muốn thoát?", "Xác nhận", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
-            System.exit(0);
-        }
+    private JPanel createHeader() {
+        JPanel header = new JPanel(new BorderLayout());
+        header.setBackground(Color.WHITE);
+        header.setPreferredSize(new Dimension(0, 70));
+        header.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(230, 230, 230)));
+
+        lblPageTitle = new JLabel("TỔNG QUAN HỆ THỐNG");
+        lblPageTitle.setFont(new Font("Segoe UI", Font.BOLD, 18));
+        lblPageTitle.setForeground(UIHelper.TEXT_COLOR);
+        lblPageTitle.setBorder(new EmptyBorder(0, 30, 0, 0));
+        header.add(lblPageTitle, BorderLayout.WEST);
+
+        JLabel lblUser = new JLabel("Xin chào, Quản trị viên ");
+        lblUser.setFont(UIHelper.MAIN_FONT);
+        lblUser.setBorder(new EmptyBorder(0, 0, 0, 30));
+        header.add(lblUser, BorderLayout.EAST);
+
+        return header;
+    }
+
+    private JPanel createDashboardPanel() {
+        JPanel pnlDashboard = new JPanel(new MigLayout("wrap 3, fillx, insets 0", "[fill, grow]", "[]25[]"));
+        pnlDashboard.setOpaque(false);
+        pnlDashboard.add(UIHelper.createDashboardCard("DOANH THU THÁNG", "1.250.000.000 VNĐ", UIHelper.SUCCESS_COLOR), "grow");
+        pnlDashboard.add(UIHelper.createDashboardCard("HỌC VIÊN MỚI", "+124 học viên", UIHelper.PRIMARY_COLOR), "grow");
+        pnlDashboard.add(UIHelper.createDashboardCard("LỚP SẮP MỞ", "12 lớp học", UIHelper.SECONDARY_COLOR), "grow");
+        return pnlDashboard;
     }
 
     public static void main(String[] args) {
+        com.formdev.flatlaf.FlatLightLaf.setup();
         SwingUtilities.invokeLater(() -> new MainMenuFrame().setVisible(true));
     }
 }
