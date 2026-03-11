@@ -16,6 +16,8 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
@@ -109,7 +111,15 @@ public class ScheduleManagerPanel extends BaseManagerPanel {
         if (scheduleController == null) return;
         List<Schedule> list = scheduleController.getAllSchedules();
         tableModel.setRowCount(0);
-        list.forEach(s -> tableModel.addRow(new Object[]{ s.getSchedule_id(), s.getClazz().getClassName(), s.getStudyDate(), s.getStartTime(), s.getEndTime(), s.getRoom() != null ? s.getRoom().getRoomName() : "No" }));
+        // Sử dụng Java Lambda để nạp dữ liệu bảng
+        list.forEach(s -> tableModel.addRow(new Object[]{ 
+            s.getSchedule_id(), 
+            s.getClazz().getClassName(), 
+            s.getStudyDate(), 
+            s.getStartTime(), 
+            s.getEndTime(), 
+            s.getRoom() != null ? s.getRoom().getRoomName() : "No" 
+        }));
         updateCalendarGrid(list);
     }
 
@@ -129,11 +139,128 @@ public class ScheduleManagerPanel extends BaseManagerPanel {
     }
 
     private JPanel createCard(Schedule s) {
-        JPanel c = new JPanel(new MigLayout("wrap 1, inset 5")); c.setBackground(new Color(255,107,53,20)); c.setBorder(new LineBorder(UIHelper.PRIMARY_COLOR));
-        c.add(new JLabel(s.getStartTime() + "-" + s.getEndTime()));
-        c.add(new JLabel(s.getClazz().getClassName()), "growx");
+        JPanel c = new JPanel(new MigLayout("wrap 1, inset 5")); 
+        c.setBackground(new Color(255,107,53,20)); 
+        c.setBorder(new LineBorder(UIHelper.PRIMARY_COLOR));
+        
+        JLabel lblTime = new JLabel(s.getStartTime() + " - " + s.getEndTime());
+        lblTime.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        c.add(lblTime);
+        
+        JLabel lblName = new JLabel(s.getClazz().getClassName());
+        lblName.setFont(UIHelper.BOLD_FONT);
+        c.add(lblName, "growx");
+        
+        // Bổ sung Sĩ số tối đa từ ClassEntity
+        int max = s.getClazz().getMaxStudent();
+        JLabel lblMax = new JLabel("Sĩ số: " + max);
+        lblMax.setFont(new Font("Segoe UI", Font.PLAIN, 11));
+        lblMax.setForeground(Color.GRAY);
+        c.add(lblMax);
+        
         return c;
     }
 
-    @Override protected void handleEvents() { btnClear.addActionListener(e -> { txtStudyDate.setText(""); tblSchedule.clearSelection(); }); }
+    @Override 
+    protected void handleEvents() { 
+        btnClear.addActionListener(e -> { 
+            txtStudyDate.setText(""); 
+            txtStartTime.setText("");
+            txtEndTime.setText("");
+            tblSchedule.clearSelection(); 
+        }); 
+
+        btnAdd.addActionListener(e -> {
+            Schedule s = getScheduleFromFields();
+            if (s != null) {
+                String res = scheduleController.createSchedule(s);
+                JOptionPane.showMessageDialog(this, res);
+                loadTableData();
+            }
+        });
+
+        btnUpdate.addActionListener(e -> {
+            int row = tblSchedule.getSelectedRow();
+            if (row < 0) {
+                JOptionPane.showMessageDialog(this, "Chọn lịch học cần sửa!");
+                return;
+            }
+            Long id = (Long) tblSchedule.getValueAt(row, 0);
+            Schedule s = getScheduleFromFields();
+            if (s != null) {
+                s.setSchedule_id(id);
+                String res = scheduleController.updateSchedule(s);
+                JOptionPane.showMessageDialog(this, res);
+                loadTableData();
+            }
+        });
+
+        btnDelete.addActionListener(e -> {
+            int row = tblSchedule.getSelectedRow();
+            if (row < 0) {
+                JOptionPane.showMessageDialog(this, "Chọn lịch học cần xóa!");
+                return;
+            }
+            int confirm = JOptionPane.showConfirmDialog(this, "Xác nhận xóa lịch học này?", "Xác nhận", JOptionPane.YES_NO_OPTION);
+            if (confirm == JOptionPane.YES_OPTION) {
+                Long id = (Long) tblSchedule.getValueAt(row, 0);
+                String res = scheduleController.deleteSchedule(id.intValue());
+                JOptionPane.showMessageDialog(this, res);
+                loadTableData();
+            }
+        });
+
+        tblSchedule.getSelectionModel().addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) {
+                fillFieldsFromSelectedRow();
+            }
+        });
+
+        cmbClass.addActionListener(e -> {
+            ClassEntity selected = (ClassEntity) cmbClass.getSelectedItem();
+            if (selected != null) {
+                List<Schedule> list = scheduleController.getSchedulesByClass(selected);
+                tableModel.setRowCount(0);
+                list.forEach(s -> tableModel.addRow(new Object[]{ 
+                    s.getSchedule_id(), 
+                    s.getClazz().getClassName(), 
+                    s.getStudyDate(), 
+                    s.getStartTime(), 
+                    s.getEndTime(), 
+                    s.getRoom() != null ? s.getRoom().getRoomName() : "No" 
+                }));
+                updateCalendarGrid(list);
+            }
+        });
+    }
+
+    private Schedule getScheduleFromFields() {
+        try {
+            Schedule s = new Schedule();
+            s.setClazz((ClassEntity) cmbClass.getSelectedItem());
+            s.setStudyDate(LocalDate.parse(txtStudyDate.getText().trim()));
+            s.setStartTime(LocalTime.parse(txtStartTime.getText().trim()));
+            s.setEndTime(LocalTime.parse(txtEndTime.getText().trim()));
+            s.setRoom((Room) cmbRoom.getSelectedItem());
+            return s;
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Dữ liệu không hợp lệ: " + e.getMessage());
+            return null;
+        }
+    }
+
+    private void fillFieldsFromSelectedRow() {
+        int row = tblSchedule.getSelectedRow();
+        if (row >= 0) {
+            Long id = (Long) tblSchedule.getValueAt(row, 0);
+            Schedule s = scheduleController.getScheduleById(id.intValue());
+            if (s != null) {
+                cmbClass.setSelectedItem(s.getClazz());
+                txtStudyDate.setText(s.getStudyDate().toString());
+                txtStartTime.setText(s.getStartTime().toString());
+                txtEndTime.setText(s.getEndTime().toString());
+                cmbRoom.setSelectedItem(s.getRoom());
+            }
+        }
+    }
 }

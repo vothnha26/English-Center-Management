@@ -50,6 +50,24 @@ public class FinanceController {
         invoiceService.updateStatus(invoiceId, InvoiceStatus.Cancelled);
     }
 
+    public String deleteInvoice(Long invoiceId) {
+        try {
+            invoiceService.deleteInvoice(invoiceId);
+            return "Xóa hóa đơn thành công!";
+        } catch (Exception e) {
+            return "Lỗi: " + e.getMessage();
+        }
+    }
+
+    public String updateInvoiceStatus(Long invoiceId, InvoiceStatus status) {
+        try {
+            invoiceService.updateStatus(invoiceId, status);
+            return "Cập nhật trạng thái thành công!";
+        } catch (Exception e) {
+            return "Lỗi: " + e.getMessage();
+        }
+    }
+
     public List<Invoice> getAllInvoices() {
         return invoiceService.getAll();
     }

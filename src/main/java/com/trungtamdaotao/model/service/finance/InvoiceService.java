@@ -42,6 +42,10 @@ public class InvoiceService {
         invoiceDAO.update(inv);
     }
 
+    public void deleteInvoice(Long invoiceId) {
+        invoiceDAO.delete(invoiceId);
+    }
+
     public List<Invoice> getAll() {
         return invoiceDAO.findAll();
     }

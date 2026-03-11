@@ -26,6 +26,10 @@ public class InvoiceManagerPanel extends BaseManagerPanel {
     private JPanel pnlWizard;
     private CardLayout wizardLayout;
 
+    // --- Buttons & Filters ---
+    private JButton btnAdd, btnUpdate, btnDelete, btnSearch;
+    private JComboBox<InvoiceStatus> cmbStatusFilter;
+
     public InvoiceManagerPanel() {
         super();
         this.financeController = new FinanceController();
@@ -48,11 +52,27 @@ public class InvoiceManagerPanel extends BaseManagerPanel {
         pnl.setOpaque(false);
         pnl.setBorder(new EmptyBorder(15, 15, 15, 15));
 
-        JPanel pnlFilter = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        JPanel pnlTop = new JPanel(new BorderLayout());
+        pnlTop.setOpaque(false);
+
+        JPanel pnlFilter = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
         pnlFilter.setOpaque(false);
         pnlFilter.add(new JLabel("Trạng thái:"));
-        pnlFilter.add(new JComboBox<>(InvoiceStatus.values()));
-        pnl.add(pnlFilter, BorderLayout.NORTH);
+        cmbStatusFilter = new JComboBox<>(InvoiceStatus.values());
+        pnlFilter.add(cmbStatusFilter);
+        btnSearch = UIHelper.createStandardButton("Lọc", UIHelper.PRIMARY_COLOR, "🔍");
+        pnlFilter.add(btnSearch);
+        
+        JPanel pnlActions = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
+        pnlActions.setOpaque(false);
+        btnAdd = UIHelper.createStandardButton("Tạo mới", UIHelper.SUCCESS_COLOR, "➕");
+        btnUpdate = UIHelper.createStandardButton("Cập nhật trạng thái", UIHelper.PRIMARY_COLOR, "📝");
+        btnDelete = UIHelper.createStandardButton("Xóa", Color.RED, "🗑");
+        pnlActions.add(btnAdd); pnlActions.add(btnUpdate); pnlActions.add(btnDelete);
+
+        pnlTop.add(pnlFilter, BorderLayout.WEST);
+        pnlTop.add(pnlActions, BorderLayout.EAST);
+        pnl.add(pnlTop, BorderLayout.NORTH);
 
         String[] columns = {"ID", "Học viên", "Tổng tiền", "Ngày tạo", "Trạng thái"};
         tableModel = new DefaultTableModel(columns, 0) { @Override public boolean isCellEditable(int r, int c) { return false; } };
@@ -103,14 +123,66 @@ public class InvoiceManagerPanel extends BaseManagerPanel {
         return pnl;
     }
 
-    @Override protected void handleEvents() {}
+    @Override
+    protected void handleEvents() {
+        btnSearch.addActionListener(e -> loadTableData());
+
+        btnAdd.addActionListener(e -> tabbedPane.setSelectedIndex(1));
+
+        btnUpdate.addActionListener(e -> {
+            int row = tblInvoice.getSelectedRow();
+            if (row == -1) {
+                JOptionPane.showMessageDialog(this, "Vui lòng chọn hóa đơn để cập nhật!");
+                return;
+            }
+            Long id = (Long) tableModel.getValueAt(row, 0);
+            InvoiceStatus currentStatus = (InvoiceStatus) tableModel.getValueAt(row, 4);
+            
+            InvoiceStatus newStatus = (InvoiceStatus) JOptionPane.showInputDialog(
+                this, "Chọn trạng thái mới:", "Cập nhật trạng thái",
+                JOptionPane.QUESTION_MESSAGE, null, InvoiceStatus.values(), currentStatus
+            );
+            
+            if (newStatus != null && newStatus != currentStatus) {
+                String msg = financeController.updateInvoiceStatus(id, newStatus);
+                JOptionPane.showMessageDialog(this, msg);
+                loadTableData();
+            }
+        });
+
+        btnDelete.addActionListener(e -> {
+            int row = tblInvoice.getSelectedRow();
+            if (row == -1) {
+                JOptionPane.showMessageDialog(this, "Vui lòng chọn hóa đơn để xóa!");
+                return;
+            }
+            Long id = (Long) tableModel.getValueAt(row, 0);
+            int choice = JOptionPane.showConfirmDialog(this, "Bạn có chắc chắn muốn xóa hóa đơn này?", "Xác nhận", JOptionPane.YES_NO_OPTION);
+            if (choice == JOptionPane.YES_OPTION) {
+                String msg = financeController.deleteInvoice(id);
+                JOptionPane.showMessageDialog(this, msg);
+                loadTableData();
+            }
+        });
+    }
     
-    @Override protected void loadTableData() {
-        if (financeController == null) return;
+    @Override 
+    protected void loadTableData() {
+        if (financeController == null || tableModel == null) return;
         List<Invoice> list = financeController.getAllInvoices();
+        InvoiceStatus filter = cmbStatusFilter != null ? (InvoiceStatus) cmbStatusFilter.getSelectedItem() : null;
+        
         tableModel.setRowCount(0);
-        for (Invoice i : list) {
-            tableModel.addRow(new Object[]{ i.getInvoiceId(), i.getStudent().getFullName(), i.getTotalAmount(), i.getIssueDate(), i.getStatus() });
-        }
+        list.stream()
+            .filter(i -> filter == null || i.getStatus() == filter)
+            .forEach(i -> {
+                tableModel.addRow(new Object[]{ 
+                    i.getInvoiceId(), 
+                    i.getStudent() != null ? i.getStudent().getFullName() : "N/A", 
+                    i.getTotalAmount(), 
+                    i.getIssueDate(), 
+                    i.getStatus() 
+                });
+            });
     }
 }

@@ -97,8 +97,8 @@ public class LoginFrame extends JFrame {
 
             JOptionPane.showMessageDialog(this, "Đăng nhập thành công!");
 
-            // Mở MainMenuFrame chung cho hệ thống
-            new com.trungtamdaotao.view.MainMenuFrame().setVisible(true);
+            // Mở MainMenuFrame với vai trò của tài khoản đăng nhập
+            new com.trungtamdaotao.view.MainMenuFrame(account.getRole()).setVisible(true);
 
             dispose(); // Đóng login frame
         } catch (Exception ex) {

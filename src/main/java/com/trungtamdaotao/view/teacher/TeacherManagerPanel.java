@@ -80,7 +80,70 @@ public class TeacherManagerPanel extends BaseManagerPanel {
 
     @Override protected void handleEvents() {
         btnSearch.addActionListener(e -> loadTableData());
-        btnClear.addActionListener(e -> { txtFullName.setText(""); txtPhone.setText(""); txtEmail.setText(""); txtSpecialty.setText(""); tblTeacher.clearSelection(); });
+        btnAdd.addActionListener(e -> {
+            try {
+                String name = txtFullName.getText();
+                String phone = txtPhone.getText();
+                String email = txtEmail.getText();
+                String specialty = txtSpecialty.getText();
+                
+                teacherController.addTeacher(name, phone, email, specialty, java.time.LocalDate.now());
+                JOptionPane.showMessageDialog(this, "Them giao vien thanh cong!");
+                loadTableData();
+                btnClear.doClick();
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Loi: " + ex.getMessage(), "Loi", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
+        btnUpdate.addActionListener(e -> {
+            int row = tblTeacher.getSelectedRow();
+            if (row < 0) {
+                JOptionPane.showMessageDialog(this, "Vui long chon giao vien can sua!");
+                return;
+            }
+            try {
+                Long id = (Long) tableModel.getValueAt(row, 0);
+                Teacher t = teacherController.getTeacherById(id);
+                t.setFullName(txtFullName.getText());
+                t.setPhone(txtPhone.getText());
+                t.setEmail(txtEmail.getText());
+                t.setSpecialty(txtSpecialty.getText());
+                t.setStatus((Status) cmbStatus.getSelectedItem());
+                
+                teacherController.updateTeacher(t);
+                JOptionPane.showMessageDialog(this, "Cap nhat thanh cong!");
+                loadTableData();
+                btnClear.doClick();
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Loi: " + ex.getMessage(), "Loi", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
+        btnDelete.addActionListener(e -> {
+            int row = tblTeacher.getSelectedRow();
+            if (row < 0) {
+                JOptionPane.showMessageDialog(this, "Vui long chon giao vien can xoa!");
+                return;
+            }
+            int confirm = JOptionPane.showConfirmDialog(this, "Ban co chac muon xoa (ngung hoat dong) giao vien nay?", "Xac nhan", JOptionPane.YES_NO_OPTION);
+            if (confirm == JOptionPane.YES_OPTION) {
+                Long id = (Long) tableModel.getValueAt(row, 0);
+                teacherController.deleteTeacher(id);
+                loadTableData();
+                btnClear.doClick();
+            }
+        });
+
+        btnClear.addActionListener(e -> { 
+            txtFullName.setText(""); 
+            txtPhone.setText(""); 
+            txtEmail.setText(""); 
+            txtSpecialty.setText(""); 
+            cmbStatus.setSelectedIndex(0);
+            tblTeacher.clearSelection(); 
+        });
+
         tblTeacher.getSelectionModel().addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting() && tblTeacher.getSelectedRow() >= 0) {
                 int row = tblTeacher.getSelectedRow();
@@ -95,10 +158,18 @@ public class TeacherManagerPanel extends BaseManagerPanel {
 
     @Override protected void loadTableData() {
         if (teacherController == null) return;
-        List<Teacher> list = teacherController.getAllTeachers();
-        tableModel.setRowCount(0);
-        for (Teacher t : list) {
-            tableModel.addRow(new Object[]{ t.getTeacher_id(), t.getFullName(), t.getPhone(), t.getEmail(), t.getSpecialty(), t.getStatus() });
+        String keyword = txtSearch.getText();
+        List<Teacher> list;
+        if (keyword == null || keyword.isBlank()) {
+            list = teacherController.getAllTeachers();
+        } else {
+            list = teacherController.searchTeachers(keyword);
         }
+        
+        tableModel.setRowCount(0);
+        list.forEach(t -> tableModel.addRow(new Object[]{ 
+            t.getTeacher_id(), t.getFullName(), t.getPhone(), 
+            t.getEmail(), t.getSpecialty(), t.getStatus() 
+        }));
     }
 }

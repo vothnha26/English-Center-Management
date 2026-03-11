@@ -98,23 +98,101 @@ public class StaffManagerPanel extends BaseManagerPanel {
     @Override
     protected void handleEvents() {
         btnSearch.addActionListener(e -> loadTableData());
-        btnClear.addActionListener(e -> { txtFullName.setText(""); txtUsername.setText(""); tblStaff.clearSelection(); });
+        
+        btnAdd.addActionListener(e -> {
+            try {
+                String fullName = txtFullName.getText().trim();
+                String phone = txtPhone.getText().trim();
+                String email = txtEmail.getText().trim();
+                StaffRole role = (StaffRole) cmbRole.getSelectedItem();
+
+                staffController.addStaff(fullName, role, phone, email);
+                JOptionPane.showMessageDialog(this, "Thêm nhân viên thành công!");
+                loadTableData();
+                clearForm();
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Lỗi: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
+        btnUpdate.addActionListener(e -> {
+            int row = tblStaff.getSelectedRow();
+            if (row < 0) {
+                JOptionPane.showMessageDialog(this, "Vui lòng chọn nhân viên cần sửa!");
+                return;
+            }
+            try {
+                Long id = (Long) tableModel.getValueAt(row, 0);
+                Staff s = staffController.getStaffById(id);
+                s.setFullName(txtFullName.getText().trim());
+                s.setPhone(txtPhone.getText().trim());
+                s.setEmail(txtEmail.getText().trim());
+                s.setRole((StaffRole) cmbRole.getSelectedItem());
+                s.setStatus((Status) cmbStatus.getSelectedItem());
+
+                staffController.updateStaff(s);
+                JOptionPane.showMessageDialog(this, "Cập nhật thành công!");
+                loadTableData();
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Lỗi: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
+        btnDelete.addActionListener(e -> {
+            int row = tblStaff.getSelectedRow();
+            if (row < 0) {
+                JOptionPane.showMessageDialog(this, "Vui lòng chọn nhân viên cần xóa!");
+                return;
+            }
+            int confirm = JOptionPane.showConfirmDialog(this, "Bạn có chắc muốn vô hiệu hóa nhân viên này?", "Xác nhận", JOptionPane.YES_NO_OPTION);
+            if (confirm == JOptionPane.YES_OPTION) {
+                Long id = (Long) tableModel.getValueAt(row, 0);
+                staffController.deleteStaff(id);
+                loadTableData();
+                clearForm();
+            }
+        });
+
+        btnClear.addActionListener(e -> clearForm());
+        
         tblStaff.getSelectionModel().addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting() && tblStaff.getSelectedRow() >= 0) {
                 int row = tblStaff.getSelectedRow();
-                txtFullName.setText(tableModel.getValueAt(row, 1).toString());
-                txtPhone.setText(tableModel.getValueAt(row, 2).toString());
-                txtEmail.setText(tableModel.getValueAt(row, 3).toString());
-                cmbRole.setSelectedItem(tableModel.getValueAt(row, 4));
-                cmbStatus.setSelectedItem(tableModel.getValueAt(row, 5));
+                Long id = (Long) tableModel.getValueAt(row, 0);
+                Staff s = staffController.getStaffById(id);
+                if (s != null) {
+                    txtFullName.setText(s.getFullName());
+                    txtPhone.setText(s.getPhone());
+                    txtEmail.setText(s.getEmail());
+                    txtUsername.setText(s.getEmail()); // Assuming email as username for display
+                    cmbRole.setSelectedItem(s.getRole());
+                    cmbStatus.setSelectedItem(s.getStatus());
+                }
             }
         });
+    }
+
+    private void clearForm() {
+        txtFullName.setText("");
+        txtPhone.setText("");
+        txtEmail.setText("");
+        txtUsername.setText("");
+        cmbRole.setSelectedIndex(0);
+        cmbStatus.setSelectedItem(Status.Active);
+        tblStaff.clearSelection();
     }
 
     @Override
     protected void loadTableData() {
         if (staffController == null) return;
-        List<Staff> list = staffController.getAllStaff();
+        String keyword = txtSearch.getText().trim();
+        List<Staff> list;
+        if (keyword.isEmpty()) {
+            list = staffController.getAllStaff();
+        } else {
+            list = staffController.searchStaff(keyword);
+        }
+        
         tableModel.setRowCount(0);
         for (Staff s : list) {
             tableModel.addRow(new Object[]{ s.getStaff_id(), s.getFullName(), s.getPhone(), s.getEmail(), s.getRole(), s.getStatus() });

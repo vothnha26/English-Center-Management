@@ -73,4 +73,8 @@ public class StudentController {
     public List<Enrollment> getAllEnrollments() {
         return enrollmentService.getAll();
     }
+
+    public List<Enrollment> getEnrollmentsByClass(Long classId) {
+        return enrollmentService.getEnrollmentsByClass(classId);
+    }
 }
