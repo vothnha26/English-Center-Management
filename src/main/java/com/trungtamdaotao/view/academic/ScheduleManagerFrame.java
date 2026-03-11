@@ -2,7 +2,7 @@ package com.trungtamdaotao.view.academic;
 
 import com.trungtamdaotao.controller.academic.ClassController;
 import com.trungtamdaotao.controller.academic.ScheduleController;
-import com.trungtamdaotao.model.dao.impl.RoomDAOImpl;
+import com.trungtamdaotao.model.dao.operations.impl.RoomDAOImpl;
 import com.trungtamdaotao.model.dao.operations.IRoomDAO;
 import com.trungtamdaotao.model.entity.academic.ClassEntity;
 import com.trungtamdaotao.model.entity.academic.Schedule;

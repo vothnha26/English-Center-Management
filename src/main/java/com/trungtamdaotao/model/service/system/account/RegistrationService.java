@@ -1,7 +1,7 @@
 package com.trungtamdaotao.model.service.system.account;
 
-import com.trungtamdaotao.model.dao.impl.AccountDAOImpl;
-import com.trungtamdaotao.model.dao.impl.TokenDAOImpl;
+import com.trungtamdaotao.model.dao.system.impl.AccountDAOImpl;
+import com.trungtamdaotao.model.dao.system.impl.TokenDAOImpl;
 import com.trungtamdaotao.model.entity.core.Student;
 import com.trungtamdaotao.model.entity.core.Teacher;
 import com.trungtamdaotao.model.entity.enums.AccountRole;

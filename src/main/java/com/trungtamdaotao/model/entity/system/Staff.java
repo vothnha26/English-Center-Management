@@ -3,7 +3,7 @@ package com.trungtamdaotao.model.entity.system;
 import jakarta.persistence.*;
 import com.trungtamdaotao.model.entity.enums.Status;
 import com.trungtamdaotao.model.entity.enums.StaffRole;
-import com.trungtamdaotao.util.StaffRoleConverter;
+import com.trungtamdaotao.model.dao.StaffRoleConverter;
 
 @Entity
 @Table(name = "staffs")

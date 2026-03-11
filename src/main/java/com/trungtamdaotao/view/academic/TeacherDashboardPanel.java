@@ -1,7 +1,7 @@
 package com.trungtamdaotao.view.academic;
 
 import com.trungtamdaotao.util.UIHelper;
-import com.trungtamdaotao.util.DashboardChart;
+import com.trungtamdaotao.view.common.DashboardChart;
 import net.miginfocom.swing.MigLayout;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;

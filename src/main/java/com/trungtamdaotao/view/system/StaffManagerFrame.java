@@ -1,7 +1,7 @@
 package com.trungtamdaotao.view.system;
 
 import com.trungtamdaotao.controller.system.StaffController;
-import com.trungtamdaotao.model.dao.impl.AccountDAOImpl;
+import com.trungtamdaotao.model.dao.system.impl.AccountDAOImpl;
 import com.trungtamdaotao.model.entity.enums.StaffRole;
 import com.trungtamdaotao.model.entity.system.Staff;
 import com.trungtamdaotao.model.service.system.account.AccountService;

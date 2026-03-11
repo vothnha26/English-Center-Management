@@ -1,4 +1,4 @@
-package com.trungtamdaotao.model.dao.impl;
+package com.trungtamdaotao.model.dao.student.impl;
 
 import java.util.List;
 

@@ -1,7 +1,7 @@
 package com.trungtamdaotao.view;
 
 import com.trungtamdaotao.util.UIHelper;
-import com.trungtamdaotao.util.DashboardChart;
+import com.trungtamdaotao.view.common.DashboardChart;
 import com.trungtamdaotao.model.entity.enums.AccountRole;
 import com.trungtamdaotao.view.student.StudentManagerPanel;
 import com.trungtamdaotao.view.teacher.TeacherManagerPanel;

@@ -5,8 +5,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
-import com.trungtamdaotao.model.dao.impl.InvoiceDAOImpl;
-import com.trungtamdaotao.model.dao.impl.PaymentDAOImpl;
+import com.trungtamdaotao.model.dao.finance.impl.InvoiceDAOImpl;
+import com.trungtamdaotao.model.dao.finance.impl.PaymentDAOImpl;
 import com.trungtamdaotao.model.entity.core.Student;
 import com.trungtamdaotao.model.entity.enums.InvoiceStatus;
 import com.trungtamdaotao.model.entity.enums.PaymentMethod;

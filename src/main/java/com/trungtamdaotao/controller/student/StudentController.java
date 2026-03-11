@@ -3,8 +3,8 @@ package com.trungtamdaotao.controller.student;
 import java.time.LocalDate;
 import java.util.List;
 
-import com.trungtamdaotao.model.dao.impl.EnrollmentDAOImpl;
-import com.trungtamdaotao.model.dao.impl.StudentDAOImpl;
+import com.trungtamdaotao.model.dao.student.impl.EnrollmentDAOImpl;
+import com.trungtamdaotao.model.dao.student.impl.StudentDAOImpl;
 import com.trungtamdaotao.model.entity.academic.ClassEntity;
 import com.trungtamdaotao.model.entity.academic.Enrollment;
 import com.trungtamdaotao.model.entity.core.Student;

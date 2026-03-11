@@ -2,7 +2,7 @@ package com.trungtamdaotao.controller.system;
 
 import java.util.List;
 
-import com.trungtamdaotao.model.dao.impl.StaffDAOImpl;
+import com.trungtamdaotao.model.dao.system.impl.StaffDAOImpl;
 import com.trungtamdaotao.model.entity.enums.StaffRole;
 import com.trungtamdaotao.model.entity.system.Staff;
 import com.trungtamdaotao.model.service.system.StaffService;

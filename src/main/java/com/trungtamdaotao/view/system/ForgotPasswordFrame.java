@@ -5,8 +5,8 @@ import java.awt.*;
 import com.trungtamdaotao.model.service.system.account.AuthenticationService;
 import com.trungtamdaotao.model.service.system.account.AccountService;
 import com.trungtamdaotao.model.service.system.TokenService;
-import com.trungtamdaotao.model.dao.impl.AccountDAOImpl;
-import com.trungtamdaotao.model.dao.impl.TokenDAOImpl;
+import com.trungtamdaotao.model.dao.system.impl.AccountDAOImpl;
+import com.trungtamdaotao.model.dao.system.impl.TokenDAOImpl;
 
 public class ForgotPasswordFrame extends JFrame {
 

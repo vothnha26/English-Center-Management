@@ -1,7 +1,7 @@
 package com.trungtamdaotao.controller.academic;
 
 import com.trungtamdaotao.model.dao.academic.IAttendanceDAO;
-import com.trungtamdaotao.model.dao.impl.AttendanceDAOImpl;
+import com.trungtamdaotao.model.dao.academic.impl.AttendanceDAOImpl;
 import com.trungtamdaotao.model.entity.academic.Attendance;
 import com.trungtamdaotao.model.entity.academic.ClassEntity;
 import com.trungtamdaotao.model.entity.core.Student;

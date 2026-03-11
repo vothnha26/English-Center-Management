@@ -1,7 +1,7 @@
 package com.trungtamdaotao.controller.academic;
 
 import com.trungtamdaotao.model.dao.academic.IScheduleDAO;
-import com.trungtamdaotao.model.dao.impl.ScheduleDAOImpl;
+import com.trungtamdaotao.model.dao.academic.impl.ScheduleDAOImpl;
 import com.trungtamdaotao.model.entity.academic.ClassEntity;
 import com.trungtamdaotao.model.entity.academic.Schedule;
 import com.trungtamdaotao.model.entity.operations.Room;

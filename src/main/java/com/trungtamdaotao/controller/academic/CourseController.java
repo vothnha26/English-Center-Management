@@ -1,7 +1,7 @@
 package com.trungtamdaotao.controller.academic;
 
 import com.trungtamdaotao.model.dao.academic.ICourseDAO;
-import com.trungtamdaotao.model.dao.impl.CourseDAOImpl;
+import com.trungtamdaotao.model.dao.academic.impl.CourseDAOImpl;
 import com.trungtamdaotao.model.entity.core.Course;
 import com.trungtamdaotao.model.entity.enums.Status;
 import com.trungtamdaotao.model.service.academic.CourseService;

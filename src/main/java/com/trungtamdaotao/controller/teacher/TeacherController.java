@@ -3,7 +3,7 @@ package com.trungtamdaotao.controller.teacher;
 import java.time.LocalDate;
 import java.util.List;
 
-import com.trungtamdaotao.model.dao.impl.TeacherDAOImpl;
+import com.trungtamdaotao.model.dao.teacher.impl.TeacherDAOImpl;
 import com.trungtamdaotao.model.entity.core.Teacher;
 import com.trungtamdaotao.model.service.teacher.TeacherService;
 

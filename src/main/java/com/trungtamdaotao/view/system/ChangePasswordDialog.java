@@ -3,7 +3,7 @@ package com.trungtamdaotao.view.system;
 import javax.swing.*;
 import java.awt.*;
 import com.trungtamdaotao.model.service.system.account.AccountService;
-import com.trungtamdaotao.model.dao.impl.AccountDAOImpl;
+import com.trungtamdaotao.model.dao.system.impl.AccountDAOImpl;
 import com.trungtamdaotao.model.entity.system.UserAccount;
 
 public class ChangePasswordDialog extends JDialog {

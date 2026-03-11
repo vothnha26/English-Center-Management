@@ -1,4 +1,4 @@
-package com.trungtamdaotao.util;
+package com.trungtamdaotao.model.dao;
 
 import com.trungtamdaotao.model.entity.enums.StaffRole;
 import jakarta.persistence.AttributeConverter;

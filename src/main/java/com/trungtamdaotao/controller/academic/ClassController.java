@@ -1,7 +1,7 @@
 package com.trungtamdaotao.controller.academic;
 
 import com.trungtamdaotao.model.dao.academic.IClassDAO;
-import com.trungtamdaotao.model.dao.impl.ClassDAOImpl;
+import com.trungtamdaotao.model.dao.academic.impl.ClassDAOImpl;
 import com.trungtamdaotao.model.entity.academic.ClassEntity;
 import com.trungtamdaotao.model.entity.core.Course;
 import com.trungtamdaotao.model.service.academic.ClassService;

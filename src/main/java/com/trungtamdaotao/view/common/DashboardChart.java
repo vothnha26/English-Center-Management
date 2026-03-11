@@ -1,5 +1,6 @@
-package com.trungtamdaotao.util;
+package com.trungtamdaotao.view.common;
 
+import com.trungtamdaotao.util.UIHelper;
 import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
