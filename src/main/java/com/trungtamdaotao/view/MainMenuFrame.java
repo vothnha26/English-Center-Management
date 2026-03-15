@@ -1,24 +1,47 @@
 package com.trungtamdaotao.view;
 
-import com.trungtamdaotao.util.UIHelper;
-import com.trungtamdaotao.view.common.DashboardChart;
+import java.awt.BorderLayout;
+import java.awt.CardLayout;
+import java.awt.Color;
+import java.awt.Cursor;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.util.Arrays;
+
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
+import javax.swing.border.EmptyBorder;
+
 import com.trungtamdaotao.model.entity.enums.AccountRole;
-import com.trungtamdaotao.view.student.StudentManagerPanel;
-import com.trungtamdaotao.view.teacher.TeacherManagerPanel;
-import com.trungtamdaotao.view.academic.AttendanceManagerPanel;
-import com.trungtamdaotao.view.academic.ScheduleManagerPanel;
+import com.trungtamdaotao.util.UIHelper;
+import com.trungtamdaotao.util.security.UserSession;
+import com.trungtamdaotao.view.system.LoginFrame;
 import com.trungtamdaotao.view.academic.AcademicManagerPanel;
+import com.trungtamdaotao.view.academic.AttendanceManagerPanel;
 import com.trungtamdaotao.view.academic.GradeManagerPanel;
+import com.trungtamdaotao.view.academic.ScheduleManagerPanel;
 import com.trungtamdaotao.view.academic.TeacherDashboardPanel;
-import com.trungtamdaotao.view.system.StaffManagerPanel;
+import com.trungtamdaotao.view.common.DashboardChart;
+import com.trungtamdaotao.controller.finance.FinanceController;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.Map;
+import java.util.List;
+import java.util.stream.Collectors;
+import com.trungtamdaotao.view.student.StudentManagerPanel;
+import com.trungtamdaotao.view.student.StudentDashboardPanel;
 import com.trungtamdaotao.view.system.PermissionManagerPanel;
-import com.trungtamdaotao.view.finance.InvoiceManagerPanel;
+import com.trungtamdaotao.view.system.StaffManagerPanel;
+import com.trungtamdaotao.view.system.AdminEnrollmentApprovalPanel;
+import com.trungtamdaotao.view.system.AdminStudentAccountPanel;
+import com.trungtamdaotao.view.teacher.TeacherManagerPanel;
 
 import net.miginfocom.swing.MigLayout;
-import javax.swing.*;
-import javax.swing.border.EmptyBorder;
-import java.awt.*;
-import java.util.Arrays;
 
 /**
  * Main Frame Hoàn thiện - Hỗ trợ Phân quyền Vai trò (Staff vs Teacher).
@@ -43,7 +66,7 @@ public class MainMenuFrame extends JFrame {
     }
 
     public MainMenuFrame() {
-        this(AccountRole.ADMIN);
+        this(AccountRole.Admin);
     }
 
     private void initComponents() {
@@ -64,21 +87,28 @@ public class MainMenuFrame extends JFrame {
         pnlContent.setBorder(new EmptyBorder(20, 20, 20, 20));
 
         // Register Panels
-        if (currentRole == AccountRole.TEACHER) {
-            pnlContent.add(new TeacherDashboardPanel(), "Dashboard");
+        if (currentRole == AccountRole.Student) {
+            StudentDashboardPanel sd = new StudentDashboardPanel();
+            pnlContent.add(sd.getCoursesPanel(), "StudentCourses");
+            pnlContent.add(sd.getProfilePanel(), "StudentProfile");
+            pnlContent.add(sd.getTimetablePanel(), "Schedules");
+            pnlContent.add(sd.getGradesPanel(), "StudentGrades");
         } else {
-            pnlContent.add(createDashboardPanel(), "Dashboard");
+            if (currentRole == AccountRole.Teacher) {
+                pnlContent.add(new TeacherDashboardPanel(), "Dashboard");
+            } else {
+                pnlContent.add(createDashboardPanel(), "Dashboard");
+            }
+            pnlContent.add(new StudentManagerPanel(), "Students");
+            pnlContent.add(new TeacherManagerPanel(), "Teachers");
+            pnlContent.add(new AcademicManagerPanel(), "Academic");
+            pnlContent.add(new ScheduleManagerPanel(), "Schedules");
+            pnlContent.add(new AttendanceManagerPanel(), "Attendance");
+            pnlContent.add(new GradeManagerPanel(), "Grades");
+            pnlContent.add(new StaffManagerPanel(), "Staff");
+            pnlContent.add(new AdminEnrollmentApprovalPanel(), "EnrollmentApproval");
+            pnlContent.add(new PermissionManagerPanel(), "Permissions");
         }
-        
-        pnlContent.add(new StudentManagerPanel(), "Students");
-        pnlContent.add(new TeacherManagerPanel(), "Teachers");
-        pnlContent.add(new AcademicManagerPanel(), "Academic");
-        pnlContent.add(new ScheduleManagerPanel(), "Schedules");
-        pnlContent.add(new AttendanceManagerPanel(), "Attendance");
-        pnlContent.add(new GradeManagerPanel(), "Grades");
-        pnlContent.add(new InvoiceManagerPanel(), "Finance");
-        pnlContent.add(new StaffManagerPanel(), "Staff");
-        pnlContent.add(new PermissionManagerPanel(), "Permissions");
 
         pnlMainArea.add(pnlContent, BorderLayout.CENTER);
         add(pnlMainArea, BorderLayout.CENTER);
@@ -95,27 +125,40 @@ public class MainMenuFrame extends JFrame {
         lblLogo.setBorder(new EmptyBorder(30, 25, 20, 25));
         sidebar.add(lblLogo);
 
-        sidebar.add(createSidebarButton("TỔNG QUAN", "Dashboard", "\u25A3"));
+        // (Overview removed) 
 
-        sidebar.add(createGroupLabel("QUẢN LÝ HỌC VỤ"));
-        if (currentRole != AccountRole.TEACHER) {
-            sidebar.add(createSidebarButton("Học viên", "Students", "\u25B8"));
-            sidebar.add(createSidebarButton("Giáo viên", "Teachers", "\u25B8"));
-            sidebar.add(createSidebarButton("Khóa & Lớp học", "Academic", "\u25B8"));
-        }
-        sidebar.add(createSidebarButton("Lịch dạy/học", "Schedules", "\u25B8"));
-        sidebar.add(createSidebarButton("Điểm danh", "Attendance", "\u25B8"));
-        sidebar.add(createSidebarButton("Quản lý Điểm số", "Grades", "\u270E"));
+        // Sidebar content varies by role
+        if (currentRole == AccountRole.Student) {
+            sidebar.add(createGroupLabel("TRANG HỌC VIÊN"));
+            sidebar.add(createSidebarButton("Khóa học", "StudentCourses", "\u25B8"));
+            sidebar.add(createSidebarButton("Hồ sơ", "StudentProfile", "\u25B8"));
+            sidebar.add(createSidebarButton("Lịch dạy/học", "Schedules", "\u25B8"));
+            sidebar.add(createSidebarButton("Điểm thi", "StudentGrades", "\u25B8"));
+        } else {
+            sidebar.add(createGroupLabel("QUẢN LÝ HỌC VỤ"));
+            if (currentRole != AccountRole.Teacher) {
+                sidebar.add(createSidebarButton("Học viên", "Students", "\u25B8"));
+                sidebar.add(createSidebarButton("Giáo viên", "Teachers", "\u25B8"));
+                sidebar.add(createSidebarButton("Khóa & Lớp học", "Academic", "\u25B8"));
+            }
+            sidebar.add(createSidebarButton("Lịch dạy/học", "Schedules", "\u25B8"));
+            sidebar.add(createSidebarButton("Điểm danh", "Attendance", "\u25B8"));
+            sidebar.add(createSidebarButton("Quản lý Điểm số", "Grades", "\u270E"));
 
-        if (currentRole != AccountRole.TEACHER) {
             sidebar.add(createGroupLabel("TÀI CHÍNH & HỆ THỐNG"));
-            sidebar.add(createSidebarButton("Hóa đơn", "Finance", "\u25B8"));
+            // 'Tạo học viên' integrated into Students tab; separate CreateStudent panel removed
+            sidebar.add(createSidebarButton("Yêu cầu ghi danh", "EnrollmentApproval", "\u25B8"));
             sidebar.add(createSidebarButton("Nhân sự", "Staff", "\u25B8"));
             sidebar.add(createSidebarButton("Phân quyền", "Permissions", "\u25B8"));
         }
 
         JButton btnLogout = UIHelper.createSidebarButton("ĐĂNG XUẤT", "\u2716");
-        btnLogout.addActionListener(e -> System.exit(0));
+        btnLogout.addActionListener(e -> {
+            // End session and return to login screen
+            UserSession.logout();
+            dispose();
+            new LoginFrame().setVisible(true);
+        });
         sidebar.add(btnLogout);
 
         return sidebar;
@@ -160,10 +203,10 @@ public class MainMenuFrame extends JFrame {
         header.add(pnlLeftHeader, BorderLayout.WEST);
 
         String roleName = switch (currentRole) {
-            case ADMIN -> "Quản trị viên";
-            case TEACHER -> "Giáo viên";
-            case STAFF -> "Nhân viên";
-            case STUDENT -> "Học viên";
+            case Admin -> "Quản trị viên";
+            case Teacher -> "Giáo viên";
+            case Staff -> "Nhân viên";
+            case Student -> "Học viên";
             default -> currentRole.toString();
         };
         JLabel lblUser = new JLabel("Xin chào, " + roleName + " ");
@@ -184,10 +227,14 @@ public class MainMenuFrame extends JFrame {
     private JPanel createDashboardPanel() {
         JPanel pnlDashboard = new JPanel(new MigLayout("wrap 3, fillx, insets 0", "[fill, grow]", "[]25[]25[grow]"));
         pnlDashboard.setOpaque(false);
-        
-        pnlDashboard.add(UIHelper.createDashboardCard("DOANH THU THÁNG", "1.250.000.000 VNĐ", UIHelper.SUCCESS_COLOR), "grow");
+        FinanceController financeCtrl = new FinanceController();
+        BigDecimal totalRevenue = financeCtrl.getTotalRevenue();
+        String revenueText = totalRevenue != null ? (totalRevenue.toString() + " VNĐ") : "0 VNĐ";
+        int unpaidCount = financeCtrl.getUnpaidInvoices() != null ? financeCtrl.getUnpaidInvoices().size() : 0;
+
+        pnlDashboard.add(UIHelper.createDashboardCard("DOANH THU TỔNG", revenueText, UIHelper.SUCCESS_COLOR), "grow");
+        pnlDashboard.add(UIHelper.createDashboardCard("HÓA ĐƠN CHƯA THU", String.valueOf(unpaidCount) + " hóa đơn", UIHelper.DANGER_COLOR), "grow");
         pnlDashboard.add(UIHelper.createDashboardCard("HỌC VIÊN MỚI", "+124 học viên", UIHelper.PRIMARY_COLOR), "grow");
-        pnlDashboard.add(UIHelper.createDashboardCard("LỚP SẮP MỞ", "12 lớp học", UIHelper.SECONDARY_COLOR), "grow");
 
         JPanel pnlChart1 = new JPanel(new BorderLayout());
         pnlChart1.setBackground(Color.WHITE);
@@ -195,7 +242,10 @@ public class MainMenuFrame extends JFrame {
         
         JPanel pnlChart2 = new JPanel(new BorderLayout());
         pnlChart2.setBackground(Color.WHITE);
-        pnlChart2.add(new DashboardChart("BIẾN ĐỘNG HỌC PHÍ", Arrays.asList(800, 950, 1100, 1050, 1200, 1250), UIHelper.SUCCESS_COLOR));
+        // Monthly revenue chart
+        Map<String, BigDecimal> monthly = financeCtrl.getMonthlyRevenue(LocalDate.now().getYear());
+        List<Integer> points = monthly != null ? monthly.values().stream().map(b -> b.divide(BigDecimal.valueOf(1000)).intValue()).collect(Collectors.toList()) : Arrays.asList(0,0,0,0,0,0);
+        pnlChart2.add(new DashboardChart("DOANH THU THEO THÁNG (x1000)", points, UIHelper.SUCCESS_COLOR));
 
         pnlDashboard.add(pnlChart1, "span 2, grow, height 400");
         pnlDashboard.add(pnlChart2, "grow, height 400");
@@ -204,6 +254,6 @@ public class MainMenuFrame extends JFrame {
 
     public static void main(String[] args) {
         com.formdev.flatlaf.FlatLightLaf.setup();
-        SwingUtilities.invokeLater(() -> new MainMenuFrame(AccountRole.TEACHER).setVisible(true));
+        SwingUtilities.invokeLater(() -> new MainMenuFrame(AccountRole.Teacher).setVisible(true));
     }
 }

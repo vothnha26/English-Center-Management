@@ -1,10 +1,12 @@
 package com.trungtamdaotao.util.security;
 
+import java.util.EnumMap;
+import java.util.EnumSet;
+import java.util.Map;
+
 import com.trungtamdaotao.model.entity.enums.AccountRole;
 import com.trungtamdaotao.model.entity.enums.StaffRole;
 import com.trungtamdaotao.model.entity.system.UserAccount;
-
-import java.util.*;
 
 public class UserPermissionImpl implements IPermission {
     private final UserAccount user;
@@ -35,10 +37,9 @@ public class UserPermissionImpl implements IPermission {
         if (user == null) return false;
         
         // Lớp 1: Admin luôn có mọi quyền
-        if (user.getRole() == AccountRole.ADMIN) return true;
+if (user.getRole() == AccountRole.Admin) return true;
 
-        // Lớp 2: Staff kiểm tra qua bảng Registry
-        if (user.getRole() == AccountRole.STAFF && user.getStaff() != null) {
+        if (user.getRole() == AccountRole.Staff && user.getStaff() != null) {
             StaffRole role = user.getStaff().getRole();
             return STAFF_PERMISSIONS.getOrDefault(role, EnumSet.noneOf(PermissionType.class))
                                     .contains(type);
@@ -55,7 +56,7 @@ public class UserPermissionImpl implements IPermission {
     @Override
     public boolean canAccessModule(String moduleName) {
         if (user == null) return false;
-        if (user.getRole() == AccountRole.ADMIN) return true;
+        if (user.getRole() == AccountRole.Admin) return true;
         if (user.getStaff() == null) return false;
         
         return STAFF_PERMISSIONS.getOrDefault(user.getStaff().getRole(), EnumSet.noneOf(PermissionType.class))

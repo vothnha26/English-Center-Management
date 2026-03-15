@@ -40,6 +40,17 @@ public class RegistrationService {
 
     public void registerUser(String username, String email, AccountRole role,
                              Consumer<UserAccount> binder) throws Exception {
+        // backward-compatible: no admin-specified password
+        registerUser(username, email, role, binder, null);
+    }
+
+    /**
+     * Register user allowing admin to provide a password directly.
+     * If `plainPassword` is non-null/non-blank, the account will be created
+     * with that password (hashed) and activated immediately without sending email.
+     */
+    public void registerUser(String username, String email, AccountRole role,
+                             Consumer<UserAccount> binder, String plainPassword) throws Exception {
         // 1. Kiểm tra tài khoản đã tồn tại chưa
         UserAccount account = accountService.findByUsername(username);
 
@@ -52,37 +63,38 @@ public class RegistrationService {
 
             // Dùng Binder để gán Teacher/Student/Staff tùy trường hợp
             binder.accept(account);
-
-            // Đặt mật khẩu tạm thời "temp" ban đầu (Hoặc bỏ qua bước này, gán thẳng Token luôn)
-            String tempPasswordHash = hashPassword("temp");
-            account.setPassword_hash(tempPasswordHash);
-
-            // Lưu Account lần 1 để lấy ID (Cần ID để tạo Token)
-            account = accountService.createAccount(account);
-
-            // 2. Tạo Token (24 giờ = 1440 phút)
-            Token token = tokenService.generateToken(account, TokenType.EMAIL_VERIFICATION, 1440);
-
-            // 3. Cập nhật password_hash thành mã Token (OTP) để làm mật khẩu tạm
-            String tokenPasswordHash = hashPassword(token.getToken_value());
-            account.setPassword_hash(tokenPasswordHash);
-
-            // Lưu lần 2 để cập nhật mật khẩu Token vào DB
-            accountService.updateAccount(account);
-
-            // 4. Gửi Mail
-            String subject = "Your Temporary Password";
-            String body = "Your temporary password is: " + token.getToken_value();
-            try {
-                emailService.sendEmail(email, subject, body);
-            } catch (Exception e) {
-                System.err.println("Lưu DB xong nhưng gửi mail lỗi: " + e.getMessage());
+            if (plainPassword != null && !plainPassword.isBlank()) {
+                // Admin provided password → set it directly and activate account
+                String hashed = hashPassword(plainPassword);
+                account.setPassword_hash(hashed);
+                account.setIs_active(true);
+                account = accountService.createAccount(account);
+            } else {
+                // Legacy flow: generate token and send temporary password via email
+                String tempPasswordHash = hashPassword("temp");
+                account.setPassword_hash(tempPasswordHash);
+                account = accountService.createAccount(account);
+                Token token = tokenService.generateToken(account, TokenType.EMAIL_VERIFICATION, 1440);
+                String tokenPasswordHash = hashPassword(token.getToken_value());
+                account.setPassword_hash(tokenPasswordHash);
+                accountService.updateAccount(account);
+                String subject = "Your Temporary Password";
+                String body = "Your temporary password is: " + token.getToken_value();
+                try {
+                    emailService.sendEmail(email, subject, body);
+                } catch (Exception e) {
+                    System.err.println("Lưu DB xong nhưng gửi mail lỗi: " + e.getMessage());
+                }
             }
         } else {
             // --- LUỒNG CẬP NHẬT ---
             // Nếu đã có account, cập nhật vai trò + liên kết Entity thông qua binder
             account.setRole(role);                   // ensure role is synchronized
             binder.accept(account);
+            if (plainPassword != null && !plainPassword.isBlank()) {
+                account.setPassword_hash(hashPassword(plainPassword));
+                account.setIs_active(true);
+            }
             accountService.updateAccount(account);
         }
     }

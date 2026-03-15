@@ -49,6 +49,7 @@ public class LoginFrame extends JFrame {
         JPanel btnPanel = new JPanel(new FlowLayout());
         btnLogin = new JButton("Đăng nhập");
         JButton btnForgot = new JButton("Quên mật khẩu");
+        JButton btnRegister = new JButton("Đăng ký");
         btnLogin.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -62,8 +63,10 @@ public class LoginFrame extends JFrame {
                 dispose();
             }
         });
+        btnRegister.addActionListener(e -> new RegistrationFrame().setVisible(true));
         btnPanel.add(btnLogin);
         btnPanel.add(btnForgot);
+        btnPanel.add(btnRegister);
         add(btnPanel, BorderLayout.SOUTH);
     }
 
@@ -98,6 +101,9 @@ public class LoginFrame extends JFrame {
             }
 
             JOptionPane.showMessageDialog(this, "Đăng nhập thành công!");
+
+            // Lưu phiên làm việc
+            com.trungtamdaotao.util.security.UserSession.login(account);
 
             // Mở MainMenuFrame với vai trò của tài khoản đăng nhập
             new com.trungtamdaotao.view.MainMenuFrame(account.getRole()).setVisible(true);

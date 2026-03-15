@@ -56,6 +56,14 @@ public class StudentService {
      */
     public void addStudent(String fullName, String phone, String email,
                            String address, LocalDate dob) throws Exception {
+        addStudent(fullName, phone, email, address, dob, null);
+    }
+
+    /**
+     * Allow admin to provide an initial password for the created student account.
+     */
+    public void addStudent(String fullName, String phone, String email,
+                           String address, LocalDate dob, String plainPassword) throws Exception {
         if (fullName == null || fullName.isBlank())
             throw new IllegalArgumentException("Họ tên không được để trống.");
         if (phone == null || phone.isBlank())
@@ -73,7 +81,7 @@ public class StudentService {
 
         // Tự động tạo account nếu có email
         if (email != null && !email.isBlank()) {
-            registrationService.registerUser(email, email, AccountRole.STUDENT, acc -> acc.setStudent(s));
+            registrationService.registerUser(email, email, AccountRole.Student, acc -> acc.setStudent(s), plainPassword);
         }
     }
 

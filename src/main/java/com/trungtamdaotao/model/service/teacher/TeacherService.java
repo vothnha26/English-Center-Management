@@ -72,7 +72,7 @@ public class TeacherService {
 
         // Tự động tạo account nếu có email
         if (email != null && !email.isBlank()) {
-            registrationService.registerUser(email, email, AccountRole.TEACHER, acc->acc.setTeacher(t));
+            registrationService.registerUser(email, email, AccountRole.Teacher, acc->acc.setTeacher(t));
         }
     }
 

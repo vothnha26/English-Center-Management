@@ -2,7 +2,7 @@ package com.trungtamdaotao.view.student;
 
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
-import java.awt.Frame;
+import java.awt.Window;
 import java.util.List;
 
 import javax.swing.BorderFactory;
@@ -39,8 +39,8 @@ public class EnrollmentDialog extends JDialog {
 
     private static final String[] COLUMNS = {"ID", "Lớp", "Ngày ghi danh", "Trạng thái"};
 
-    public EnrollmentDialog(Frame owner, Student student, StudentController controller) {
-        super(owner, "Ghi danh: " + student.getFullName(), true);
+    public EnrollmentDialog(Window owner, Student student, StudentController controller) {
+        super(owner, "Ghi danh: " + student.getFullName(), ModalityType.APPLICATION_MODAL);
         this.student    = student;
         this.controller = controller;
         initUI();

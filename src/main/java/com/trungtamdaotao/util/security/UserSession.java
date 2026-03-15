@@ -37,8 +37,8 @@ public class UserSession {
     // Các helper nhanh để truy cập dữ liệu
     public static Staff getStaffProfile() { return (currentUser != null) ? currentUser.getStaff() : null; }
     public static StaffRole getStaffRole() { Staff s = getStaffProfile(); return (s != null) ? s.getRole() : null; }
-    public static boolean isAdmin() { return currentUser != null && currentUser.getRole() == AccountRole.ADMIN; }
-    public static boolean isStaff() { return currentUser != null && currentUser.getRole() == AccountRole.STAFF; }
-    public static boolean isTeacher() { return currentUser != null && currentUser.getRole() == AccountRole.TEACHER; }
-    public static boolean isStudent() { return currentUser != null && currentUser.getRole() == AccountRole.STUDENT; }
+    public static boolean isAdmin() { return currentUser != null && currentUser.getRole() == AccountRole.Admin; }
+    public static boolean isStaff() { return currentUser != null && currentUser.getRole() == AccountRole.Staff; }
+    public static boolean isTeacher() { return currentUser != null && currentUser.getRole() == AccountRole.Teacher; }
+    public static boolean isStudent() { return currentUser != null && currentUser.getRole() == AccountRole.Student; }
 }

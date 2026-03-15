@@ -35,7 +35,7 @@ public class StudentManagerFrame extends BaseManagerFrame {
 
     public StudentManagerFrame() {
         super("Quản lý Học viên", 
-              new AccountRole[]{AccountRole.ADMIN, AccountRole.STAFF}, 
+              new AccountRole[]{AccountRole.Admin, AccountRole.Staff}, 
               new StaffRole[]{StaffRole.MANAGER, StaffRole.CONSULTANT, StaffRole.ACCOUNTANT});
         this.studentController = new StudentController();
         loadTableData();

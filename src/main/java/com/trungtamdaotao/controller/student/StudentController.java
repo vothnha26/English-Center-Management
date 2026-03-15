@@ -47,6 +47,11 @@ public class StudentController {
         studentService.addStudent(fullName, phone, email, address, dob);
     }
 
+    public void addStudent(String fullName, String phone, String email,
+                           String address, LocalDate dob, String plainPassword) throws Exception {
+        studentService.addStudent(fullName, phone, email, address, dob, plainPassword);
+    }
+
     public void updateStudent(Student student) {
         studentService.updateStudent(student);
     }
@@ -83,6 +88,18 @@ public class StudentController {
 
     public List<Enrollment> getAllEnrollments() {
         return enrollmentService.getAll();
+    }
+
+    public Enrollment getEnrollmentById(Long id) {
+        return enrollmentService.getAll().stream().filter(e -> e.getEnrollmentId().equals(id)).findFirst().orElse(null);
+    }
+
+    public Enrollment approveEnrollment(Long enrollmentId) {
+        return enrollmentService.approveEnrollment(enrollmentId);
+    }
+
+    public List<Enrollment> getPendingEnrollments() {
+        return enrollmentService.getPendingEnrollments();
     }
 
     public List<Enrollment> getEnrollmentsByClass(Long classId) {

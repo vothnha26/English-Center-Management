@@ -53,7 +53,7 @@ public class ClassManagerFrame extends BaseManagerFrame {
 
     public ClassManagerFrame() {
         super("Quản lý Lớp học", 
-              new AccountRole[]{AccountRole.ADMIN, AccountRole.STAFF}, 
+              new AccountRole[]{AccountRole.Admin, AccountRole.Staff}, 
               new StaffRole[]{StaffRole.MANAGER, StaffRole.CONSULTANT});
         this.classController = new ClassController();
         this.courseController = new CourseController();

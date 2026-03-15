@@ -16,7 +16,7 @@ import java.util.Arrays;
 public abstract class BaseManagerFrame extends JFrame {
 
     public BaseManagerFrame(String title) {
-        this(title, new AccountRole[]{AccountRole.ADMIN, AccountRole.STAFF}, null);
+        this(title, new AccountRole[]{AccountRole.Admin, AccountRole.Staff}, null);
     }
 
     public BaseManagerFrame(String title, AccountRole[] allowedAccountRoles, StaffRole[] allowedStaffRoles) {

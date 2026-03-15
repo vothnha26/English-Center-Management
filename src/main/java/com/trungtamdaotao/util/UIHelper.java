@@ -149,6 +149,14 @@ public class UIHelper {
         return panel;
     }
 
+    public static void showError(Component parent, String message) {
+        JOptionPane.showMessageDialog(parent, message, "Lỗi", JOptionPane.ERROR_MESSAGE);
+    }
+
+    public static void showInfo(Component parent, String message) {
+        JOptionPane.showMessageDialog(parent, message, "Thông báo", JOptionPane.INFORMATION_MESSAGE);
+    }
+
     public static void styleTable(JTable table) {
         table.setFont(MAIN_FONT);
         table.setRowHeight(30);

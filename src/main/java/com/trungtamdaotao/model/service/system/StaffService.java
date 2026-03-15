@@ -72,7 +72,7 @@ public class StaffService {
 
         // Tự động tạo account nếu có email
         if (email != null && !email.isBlank()) {
-            AccountRole accountRole = role == StaffRole.ADMIN ? AccountRole.ADMIN : AccountRole.STAFF;
+            AccountRole accountRole = role == StaffRole.ADMIN ? AccountRole.Admin : AccountRole.Staff;
             registrationService.registerUser(email, email, accountRole, acc -> acc.setStaff(s));
         }
     }

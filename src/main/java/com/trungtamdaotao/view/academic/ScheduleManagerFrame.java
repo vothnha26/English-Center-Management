@@ -49,7 +49,7 @@ public class ScheduleManagerFrame extends BaseManagerFrame {
 
     public ScheduleManagerFrame() {
         super("Quản lý Xếp lịch học", 
-              new AccountRole[]{AccountRole.ADMIN, AccountRole.STAFF}, 
+              new AccountRole[]{AccountRole.Admin, AccountRole.Staff}, 
               new StaffRole[]{StaffRole.MANAGER, StaffRole.CONSULTANT});
         this.scheduleController = new ScheduleController();
         this.classController = new ClassController();
