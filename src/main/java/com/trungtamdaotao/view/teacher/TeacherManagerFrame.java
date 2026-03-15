@@ -1,15 +1,19 @@
 package com.trungtamdaotao.view.teacher;
 
+import com.github.lgooddatepicker.components.DatePicker;
+import com.github.lgooddatepicker.components.DatePickerSettings;
 import com.trungtamdaotao.controller.teacher.TeacherController;
 import com.trungtamdaotao.model.entity.core.Teacher;
+import com.trungtamdaotao.model.entity.enums.AccountRole;
+import com.trungtamdaotao.model.entity.enums.StaffRole;
 import com.trungtamdaotao.util.UIHelper;
+import com.trungtamdaotao.util.security.UserSession;
 import com.trungtamdaotao.view.common.BaseManagerFrame;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 public class TeacherManagerFrame extends BaseManagerFrame {
@@ -18,13 +22,14 @@ public class TeacherManagerFrame extends BaseManagerFrame {
     private JTable tblTeacher;
     private DefaultTableModel tableModel;
 
-    private JTextField txtFullName, txtPhone, txtEmail, txtSpecialty, txtHireDate, txtSearch;
+    private JTextField txtFullName, txtPhone, txtEmail, txtSpecialty, txtSearch;
+    private DatePicker dpHireDate;
     private JButton btnAdd, btnUpdate, btnDelete, btnClear, btnSearch, btnReload;
 
-    private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-
     public TeacherManagerFrame() {
-        super("Quản lý Giáo viên");
+        super("Quản lý Giáo viên", 
+              new AccountRole[]{AccountRole.ADMIN, AccountRole.STAFF}, 
+              new StaffRole[]{StaffRole.MANAGER});
         this.controller = new TeacherController();
         loadTableData();
     }
@@ -66,7 +71,14 @@ public class TeacherManagerFrame extends BaseManagerFrame {
         addFormField(pnlForm, "Điện thoại (*):", txtPhone = new JTextField(), gbc, row++);
         addFormField(pnlForm, "Email:", txtEmail = new JTextField(), gbc, row++);
         addFormField(pnlForm, "Chuyên môn:", txtSpecialty = new JTextField(), gbc, row++);
-        addFormField(pnlForm, "Ngày tuyển:", txtHireDate = new JTextField("dd/MM/yyyy"), gbc, row++);
+        
+        // DatePicker cho Ngày tuyển
+        gbc.gridx = 0; gbc.gridy = row;
+        pnlForm.add(createFieldLabel("Ngày tuyển:"), gbc);
+        gbc.gridx = 1;
+        dpHireDate = UIHelper.createDatePicker();
+        pnlForm.add(dpHireDate, gbc);
+        row++;
 
         // Buttons Panel
         JPanel pnlButtons = new JPanel(new GridLayout(2, 2, 10, 10));
@@ -80,7 +92,9 @@ public class TeacherManagerFrame extends BaseManagerFrame {
 
         pnlButtons.add(btnAdd);
         pnlButtons.add(btnUpdate);
-        pnlButtons.add(btnDelete);
+        if (UserSession.getPermissions().canDelete()) {
+            pnlButtons.add(btnDelete);
+        }
         pnlButtons.add(btnClear);
 
         gbc.gridx = 0; gbc.gridy = row;
@@ -112,7 +126,9 @@ public class TeacherManagerFrame extends BaseManagerFrame {
         btnReload.addActionListener(e -> loadTableData());
         btnAdd.addActionListener(e -> doAdd());
         btnUpdate.addActionListener(e -> doUpdate());
-        btnDelete.addActionListener(e -> doDelete());
+        if (UserSession.getPermissions().canDelete()) {
+            btnDelete.addActionListener(e -> doDelete());
+        }
         btnClear.addActionListener(e -> clearForm());
 
         tblTeacher.getSelectionModel().addListSelectionListener(e -> {
@@ -130,8 +146,7 @@ public class TeacherManagerFrame extends BaseManagerFrame {
         for (Teacher t : list) {
             tableModel.addRow(new Object[]{
                 t.getTeacher_id(), t.getFullName(), t.getPhone(), t.getEmail(),
-                t.getSpecialty(), t.getHireDate() != null ? t.getHireDate().format(DATE_FMT) : "",
-                t.getStatus()
+                t.getSpecialty(), t.getHireDate(), t.getStatus()
             });
         }
     }
@@ -147,13 +162,12 @@ public class TeacherManagerFrame extends BaseManagerFrame {
         txtPhone.setText(tableModel.getValueAt(row, 2).toString());
         txtEmail.setText(tableModel.getValueAt(row, 3) != null ? tableModel.getValueAt(row, 3).toString() : "");
         txtSpecialty.setText(tableModel.getValueAt(row, 4) != null ? tableModel.getValueAt(row, 4).toString() : "");
-        txtHireDate.setText(tableModel.getValueAt(row, 5) != null ? tableModel.getValueAt(row, 5).toString() : "");
+        dpHireDate.setDate((LocalDate) tableModel.getValueAt(row, 5));
     }
 
     private void doAdd() {
         try {
-            LocalDate hire = txtHireDate.getText().equals("dd/MM/yyyy") ? null : LocalDate.parse(txtHireDate.getText(), DATE_FMT);
-            controller.addTeacher(txtFullName.getText(), txtPhone.getText(), txtEmail.getText(), txtSpecialty.getText(), hire);
+            controller.addTeacher(txtFullName.getText(), txtPhone.getText(), txtEmail.getText(), txtSpecialty.getText(), dpHireDate.getDate());
             JOptionPane.showMessageDialog(this, "Thêm giáo viên thành công!");
             clearForm();
             loadTableData();
@@ -172,7 +186,7 @@ public class TeacherManagerFrame extends BaseManagerFrame {
             t.setPhone(txtPhone.getText());
             t.setEmail(txtEmail.getText());
             t.setSpecialty(txtSpecialty.getText());
-            t.setHireDate(txtHireDate.getText().equals("dd/MM/yyyy") ? null : LocalDate.parse(txtHireDate.getText(), DATE_FMT));
+            t.setHireDate(dpHireDate.getDate());
             controller.updateTeacher(t);
             JOptionPane.showMessageDialog(this, "Cập nhật thành công!");
             clearForm();
@@ -197,7 +211,7 @@ public class TeacherManagerFrame extends BaseManagerFrame {
 
     private void clearForm() {
         txtFullName.setText(""); txtPhone.setText(""); txtEmail.setText("");
-        txtSpecialty.setText(""); txtHireDate.setText("dd/MM/yyyy");
+        txtSpecialty.setText(""); dpHireDate.clear();
         tblTeacher.clearSelection();
     }
 

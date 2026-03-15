@@ -1,8 +1,13 @@
 package com.trungtamdaotao.util;
 
+import com.github.lgooddatepicker.components.DatePicker;
+import com.github.lgooddatepicker.components.DatePickerSettings;
+import com.github.lgooddatepicker.components.TimePicker;
+import com.github.lgooddatepicker.components.TimePickerSettings;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.JTableHeader;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
@@ -11,43 +16,34 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Tiện ích hỗ trợ thiết kế giao diện Tiếng Việt chuẩn.
+ * Tiện ích hỗ trợ thiết kế giao diện thống nhất cho toàn hệ thống.
  */
 public class UIHelper {
-    public static final Color PRIMARY_COLOR    = Color.decode("#FF6B35");   // Energetic Orange
+    // Bảng màu chuẩn (Palette - Midnight Blue)
+    public static final Color PRIMARY_COLOR    = Color.decode("#2C3E50");   // Midnight Blue
     public static final Color SECONDARY_COLOR  = Color.decode("#D72638");   // Academic Red
-    public static final Color ACCENT_COLOR     = Color.decode("#2E4057");   // Deep Blue Gray
+    public static final Color ACCENT_COLOR     = Color.decode("#3498DB");   // Bright Blue
     public static final Color SUCCESS_COLOR    = Color.decode("#27AE60");   // Green
     public static final Color WARNING_COLOR    = Color.decode("#F39C12");   // Orange
     public static final Color DANGER_COLOR     = Color.decode("#E74C3C");   // Red
-    public static final Color BACKGROUND_COLOR = Color.decode("#F5F5F5");
-    public static final Color TEXT_COLOR       = Color.decode("#333333");
+    public static final Color BACKGROUND_COLOR = Color.decode("#ECF0F1");   // Light Gray
+    public static final Color TEXT_COLOR       = Color.decode("#2C3E50");
     public static final Color SIDEBAR_COLOR    = Color.decode("#2E4057");
 
-    // -------------------------------------------------------------------------
-    // Font — khởi tạo động để chọn font hỗ trợ đầy đủ Unicode/tiếng Việt
-    // -------------------------------------------------------------------------
-    
-    /**
-     * Danh sách font ưu tiên hỗ trợ Unicode tiếng Việt.
-     * "Segoe UI" đôi khi KHÔNG render tốt tiếng Việt trong Swing.
-     * "SansSerif" / "Dialog" là logical font — JVM tự chọn physical font bản địa đúng.
-     */
     private static final List<String> PREFERRED_FONTS = Arrays.asList(
-        "Be Vietnam Pro", "Noto Sans", "Arial Unicode MS", "Segoe UI", "SansSerif", "Dialog"
+        "Segoe UI", "Tahoma", "Arial", "SansSerif"
     );
 
     public static final Font MAIN_FONT       = buildFont(Font.PLAIN, 14);
-    public static final Font BOLD_FONT       = buildFont(Font.BOLD,  14);
-    public static final Font TITLE_FONT      = buildFont(Font.BOLD,  22);
-    public static final Font CARD_VALUE_FONT = buildFont(Font.BOLD,  28);
+    public static final Font BOLD_FONT       = buildFont(Font.BOLD, 14);
+    public static final Font TITLE_FONT      = buildFont(Font.BOLD, 18);
+    public static final Font CARD_VALUE_FONT = buildFont(Font.BOLD, 28);
 
-    /** Tìm font đầu tiên có sẵn trong hệ thống để render tiếng Việt đúng. */
     private static Font buildFont(int style, int size) {
         GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
         List<String> available = Arrays.asList(ge.getAvailableFontFamilyNames());
         String chosen = PREFERRED_FONTS.stream()
-                .filter(f -> available.contains(f) || f.equals("SansSerif") || f.equals("Dialog"))
+                .filter(available::contains)
                 .findFirst()
                 .orElse("Dialog");
         return new Font(chosen, style, size);
@@ -55,7 +51,6 @@ public class UIHelper {
 
     /**
      * Áp dụng font hỗ trợ tiếng Việt toàn cục cho TẤT CẢ Swing components.
-     * Gọi phương thức này TRƯỚC khi tạo bất kỳ component nào (trong main()).
      */
     public static void applyGlobalFont() {
         java.util.Enumeration<Object> keys = UIManager.getDefaults().keys();
@@ -70,9 +65,31 @@ public class UIHelper {
         }
     }
 
-    // -------------------------------------------------------------------------
-    // UI Factory Methods
-    // -------------------------------------------------------------------------
+    /**
+     * Tạo bộ chọn ngày (DatePicker) với cấu hình chuẩn.
+     */
+    public static DatePicker createDatePicker() {
+        DatePickerSettings settings = new DatePickerSettings();
+        settings.setFormatForDatesCommonEra("yyyy-MM-dd");
+        settings.setAllowKeyboardEditing(false);
+        
+        DatePicker picker = new DatePicker(settings);
+        picker.setFont(MAIN_FONT);
+        return picker;
+    }
+
+    /**
+     * Tạo bộ chọn giờ (TimePicker) với cấu hình chuẩn 24h.
+     */
+    public static TimePicker createTimePicker() {
+        TimePickerSettings settings = new TimePickerSettings();
+        settings.use24HourClockFormat();
+        settings.setAllowKeyboardEditing(false);
+        
+        TimePicker picker = new TimePicker(settings);
+        picker.setFont(MAIN_FONT);
+        return picker;
+    }
 
     public static JButton createSidebarButton(String text, String icon) {
         JButton btn = new JButton(icon + "  " + text);
@@ -92,25 +109,15 @@ public class UIHelper {
         return btn;
     }
 
-    public static JButton createStandardButton(String text, Color bgColor, String icon) {
-        JButton btn = new JButton(icon + " " + text);
+    public static JButton createStandardButton(String text, Color bgColor, String iconUnicode) {
+        JButton btn = new JButton(iconUnicode + " " + text);
         btn.setFont(BOLD_FONT);
         btn.setBackground(bgColor);
         btn.setForeground(Color.WHITE);
         btn.setFocusPainted(false);
+        btn.setBorder(new EmptyBorder(8, 15, 8, 15));
         btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        btn.setBorder(new EmptyBorder(6, 12, 6, 12));
         return btn;
-    }
-
-    /** Tạo form panel có viền tiêu đề — tương thích ngược với các view cũ. */
-    public static JPanel createFormPanel(String title) {
-        JPanel panel = new JPanel(new GridBagLayout());
-        panel.setBackground(Color.WHITE);
-        panel.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createTitledBorder(new LineBorder(PRIMARY_COLOR), title),
-                new EmptyBorder(10, 10, 10, 10)));
-        return panel;
     }
 
     public static JPanel createDashboardCard(String title, String value, Color color) {
@@ -130,18 +137,42 @@ public class UIHelper {
         return card;
     }
 
+    /** Tạo form panel có viền tiêu đề. */
+    public static JPanel createFormPanel(String title) {
+        JPanel panel = new JPanel();
+        panel.setLayout(new GridBagLayout());
+        panel.setBackground(Color.WHITE);
+        panel.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createTitledBorder(new LineBorder(PRIMARY_COLOR), title),
+            BorderFactory.createEmptyBorder(10, 10, 10, 10)
+        ));
+        return panel;
+    }
+
     public static void styleTable(JTable table) {
         table.setFont(MAIN_FONT);
-        table.setRowHeight(32);
-        table.setShowGrid(false);
-        table.setIntercellSpacing(new Dimension(0, 0));
-        table.setSelectionBackground(new Color(255, 107, 53, 40));
-        table.setSelectionForeground(TEXT_COLOR);
+        table.setRowHeight(30);
+        table.setSelectionBackground(new Color(52, 152, 219, 100));
+        table.setSelectionForeground(Color.BLACK);
+        table.setGridColor(Color.LIGHT_GRAY);
+
         JTableHeader header = table.getTableHeader();
         header.setFont(BOLD_FONT);
-        header.setBackground(Color.WHITE);
-        header.setForeground(TEXT_COLOR);
+        header.setBackground(PRIMARY_COLOR);
+        header.setForeground(Color.WHITE);
         header.setPreferredSize(new Dimension(0, 35));
-        header.setBorder(BorderFactory.createMatteBorder(0, 0, 2, 0, PRIMARY_COLOR));
+
+        table.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value, 
+                    boolean isSelected, boolean cellHasFocus, int row, int column) {
+                Component c = super.getTableCellRendererComponent(table, value, isSelected, cellHasFocus, row, column);
+                if (!isSelected) {
+                    c.setBackground(row % 2 == 0 ? Color.WHITE : new Color(242, 244, 244));
+                }
+                setBorder(noFocusBorder);
+                return c;
+            }
+        });
     }
 }

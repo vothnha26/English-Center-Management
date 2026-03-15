@@ -1,5 +1,7 @@
 package com.trungtamdaotao.view.academic;
 
+import com.github.lgooddatepicker.components.DatePicker;
+import com.github.lgooddatepicker.components.DatePickerSettings;
 import com.trungtamdaotao.controller.academic.ClassController;
 import com.trungtamdaotao.controller.academic.CourseController;
 import com.trungtamdaotao.model.dao.operations.impl.RoomDAOImpl;
@@ -9,9 +11,12 @@ import com.trungtamdaotao.model.dao.teacher.ITeacherDAO;
 import com.trungtamdaotao.model.entity.academic.ClassEntity;
 import com.trungtamdaotao.model.entity.core.Course;
 import com.trungtamdaotao.model.entity.core.Teacher;
+import com.trungtamdaotao.model.entity.enums.AccountRole;
 import com.trungtamdaotao.model.entity.enums.ClassStatus;
+import com.trungtamdaotao.model.entity.enums.StaffRole;
 import com.trungtamdaotao.model.entity.operations.Room;
 import com.trungtamdaotao.util.UIHelper;
+import com.trungtamdaotao.util.security.UserSession;
 import com.trungtamdaotao.view.common.BaseManagerFrame;
 
 import javax.swing.*;
@@ -19,7 +24,6 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 import java.util.List;
 
 public class ClassManagerFrame extends BaseManagerFrame {
@@ -32,7 +36,8 @@ public class ClassManagerFrame extends BaseManagerFrame {
     private DefaultTableModel tableModel;
     
     // Form fields
-    private JTextField txtClassName, txtMaxStudent, txtStartDate, txtEndDate, txtSearch;
+    private JTextField txtClassName, txtMaxStudent, txtSearch;
+    private DatePicker dpStartDate, dpEndDate;
     private JComboBox<Course> cmbCourse;
     private JComboBox<Teacher> cmbTeacher;
     private JComboBox<Room> cmbRoom;
@@ -47,7 +52,9 @@ public class ClassManagerFrame extends BaseManagerFrame {
     private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     public ClassManagerFrame() {
-        super("Quản lý Lớp học");
+        super("Quản lý Lớp học", 
+              new AccountRole[]{AccountRole.ADMIN, AccountRole.STAFF}, 
+              new StaffRole[]{StaffRole.MANAGER, StaffRole.CONSULTANT});
         this.classController = new ClassController();
         this.courseController = new CourseController();
         this.teacherDAO = new TeacherDAOImpl();
@@ -117,8 +124,21 @@ public class ClassManagerFrame extends BaseManagerFrame {
         pnlForm.add(cmbRoom, gbc);
         row++;
 
-        addFormField(pnlForm, "Ngày bắt đầu:", txtStartDate = new JTextField(), gbc, row++);
-        addFormField(pnlForm, "Ngày kết thúc:", txtEndDate = new JTextField(), gbc, row++);
+        // DatePickers
+        gbc.gridx = 0; gbc.gridy = row;
+        pnlForm.add(createFieldLabel("Ngày bắt đầu:"), gbc);
+        gbc.gridx = 1;
+        dpStartDate = UIHelper.createDatePicker();
+        pnlForm.add(dpStartDate, gbc);
+        row++;
+
+        gbc.gridx = 0; gbc.gridy = row;
+        pnlForm.add(createFieldLabel("Ngày kết thúc:"), gbc);
+        gbc.gridx = 1;
+        dpEndDate = UIHelper.createDatePicker();
+        pnlForm.add(dpEndDate, gbc);
+        row++;
+
         addFormField(pnlForm, "Sĩ số tối đa: *", txtMaxStudent = new JTextField(), gbc, row++);
 
         gbc.gridx = 0; gbc.gridy = row;
@@ -140,7 +160,11 @@ public class ClassManagerFrame extends BaseManagerFrame {
         
         pnlButtons.add(btnAdd);
         pnlButtons.add(btnUpdate);
-        pnlButtons.add(btnDelete);
+        
+        if (UserSession.getPermissions().canDelete()) {
+            pnlButtons.add(btnDelete);
+        }
+        
         pnlButtons.add(btnClear);
         
         gbc.gridx = 0; gbc.gridy = row;
@@ -173,7 +197,9 @@ public class ClassManagerFrame extends BaseManagerFrame {
         btnReload.addActionListener(e -> loadTableData());
         btnAdd.addActionListener(e -> addClass());
         btnUpdate.addActionListener(e -> updateClass());
-        btnDelete.addActionListener(e -> deleteClass());
+        if (btnDelete.getParent() != null) {
+            btnDelete.addActionListener(e -> deleteClass());
+        }
         btnClear.addActionListener(e -> clearForm());
         
         tblClass.getSelectionModel().addListSelectionListener(e -> {
@@ -222,8 +248,8 @@ public class ClassManagerFrame extends BaseManagerFrame {
             c.setCourse((Course) cmbCourse.getSelectedItem());
             c.setTeacher((Teacher) cmbTeacher.getSelectedItem());
             c.setRoom((Room) cmbRoom.getSelectedItem());
-            if (!txtStartDate.getText().isEmpty()) c.setStartDate(LocalDate.parse(txtStartDate.getText(), dateFormatter));
-            if (!txtEndDate.getText().isEmpty()) c.setEndDate(LocalDate.parse(txtEndDate.getText(), dateFormatter));
+            c.setStartDate(dpStartDate.getDate());
+            c.setEndDate(dpEndDate.getDate());
             if (!txtMaxStudent.getText().isEmpty()) c.setMaxStudent(Integer.parseInt(txtMaxStudent.getText()));
             c.setStatus((ClassStatus) cmbStatus.getSelectedItem());
             
@@ -242,8 +268,8 @@ public class ClassManagerFrame extends BaseManagerFrame {
             selectedClass.setCourse((Course) cmbCourse.getSelectedItem());
             selectedClass.setTeacher((Teacher) cmbTeacher.getSelectedItem());
             selectedClass.setRoom((Room) cmbRoom.getSelectedItem());
-            if (!txtStartDate.getText().isEmpty()) selectedClass.setStartDate(LocalDate.parse(txtStartDate.getText(), dateFormatter));
-            if (!txtEndDate.getText().isEmpty()) selectedClass.setEndDate(LocalDate.parse(txtEndDate.getText(), dateFormatter));
+            selectedClass.setStartDate(dpStartDate.getDate());
+            selectedClass.setEndDate(dpEndDate.getDate());
             if (!txtMaxStudent.getText().isEmpty()) selectedClass.setMaxStudent(Integer.parseInt(txtMaxStudent.getText()));
             selectedClass.setStatus((ClassStatus) cmbStatus.getSelectedItem());
             
@@ -266,7 +292,7 @@ public class ClassManagerFrame extends BaseManagerFrame {
     }
 
     private void clearForm() {
-        txtClassName.setText(""); txtStartDate.setText(""); txtEndDate.setText(""); txtMaxStudent.setText("");
+        txtClassName.setText(""); dpStartDate.clear(); dpEndDate.clear(); txtMaxStudent.setText("");
         if (cmbCourse.getItemCount() > 0) cmbCourse.setSelectedIndex(0);
         cmbTeacher.setSelectedIndex(0); cmbRoom.setSelectedIndex(0);
         cmbStatus.setSelectedIndex(0); selectedClass = null;
@@ -283,8 +309,8 @@ public class ClassManagerFrame extends BaseManagerFrame {
                 if (selectedClass.getCourse() != null) cmbCourse.setSelectedItem(selectedClass.getCourse());
                 cmbTeacher.setSelectedItem(selectedClass.getTeacher());
                 cmbRoom.setSelectedItem(selectedClass.getRoom());
-                txtStartDate.setText(selectedClass.getStartDate() != null ? selectedClass.getStartDate().format(dateFormatter) : "");
-                txtEndDate.setText(selectedClass.getEndDate() != null ? selectedClass.getEndDate().format(dateFormatter) : "");
+                dpStartDate.setDate(selectedClass.getStartDate());
+                dpEndDate.setDate(selectedClass.getEndDate());
                 txtMaxStudent.setText(String.valueOf(selectedClass.getMaxStudent()));
                 cmbStatus.setSelectedItem(selectedClass.getStatus());
             }
@@ -313,8 +339,8 @@ public class ClassManagerFrame extends BaseManagerFrame {
                 c.getCourse() != null ? c.getCourse().getCourseName() : "N/A",
                 c.getTeacher() != null ? c.getTeacher().getFullName() : "Chưa có",
                 c.getRoom() != null ? c.getRoom().getRoomName() : "Chưa có",
-                c.getStartDate() != null ? c.getStartDate().format(dateFormatter) : "",
-                c.getEndDate() != null ? c.getEndDate().format(dateFormatter) : "",
+                c.getStartDate(),
+                c.getEndDate(),
                 c.getMaxStudent(), c.getStatus()
             });
         }

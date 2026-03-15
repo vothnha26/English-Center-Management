@@ -56,6 +56,17 @@ public class StudentController {
         studentService.deactivateStudent(id);
     }
 
+    /**
+     * Kích hoạt lại hoặc thay đổi trạng thái học viên
+     */
+    public void updateStatus(Long id, com.trungtamdaotao.model.entity.enums.Status status) {
+        Student s = studentService.findById(id);
+        if (s != null) {
+            s.setStatus(status);
+            studentService.updateStudent(s);
+        }
+    }
+
     // ─── Ghi danh ──────────────────────────────────────────────────────────────
 
     public void enroll(Student student, ClassEntity clazz) {

@@ -59,7 +59,9 @@ public class EmailService implements ICommon {
         message.setFrom(new InternetAddress(username));
         message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(to));
         message.setSubject(subject);
-        message.setText(body);
+        
+        // Thiết lập nội dung hỗ trợ HTML
+        message.setContent(body, "text/html; charset=utf-8");
 
         Transport.send(message);
     }

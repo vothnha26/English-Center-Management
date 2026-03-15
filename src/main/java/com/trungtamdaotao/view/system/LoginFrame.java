@@ -36,10 +36,12 @@ public class LoginFrame extends JFrame {
 
         panel.add(new JLabel("Tên đăng nhập:"));
         txtUsername = new JTextField();
+        txtUsername.addActionListener(e -> doLogin()); // Enter triggers login
         panel.add(txtUsername);
 
         panel.add(new JLabel("Mật khẩu:"));
         txtPassword = new JPasswordField();
+        txtPassword.addActionListener(e -> doLogin()); // Enter triggers login
         panel.add(txtPassword);
 
         add(panel, BorderLayout.CENTER);
