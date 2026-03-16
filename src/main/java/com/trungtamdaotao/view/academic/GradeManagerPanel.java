@@ -26,16 +26,15 @@ import java.util.List;
  */
 public class GradeManagerPanel extends BaseManagerPanel {
     private final ClassController classController;
-    private final StudentController studentController;
     private final EnrollmentService enrollmentService;
     private final EmailFeedbackService emailService;
     private final PdfExportService pdfService;
-    
+
     private JComboBox<ClassEntity> cmbClass;
     private JTable tblGrade;
     private DefaultTableModel tableModel;
     private JButton btnSaveTemp, btnFinalLock, btnSendEmail, btnExportPdf;
-    
+
     // Lưu trữ danh sách student hiện tại để lấy email
     private List<Student> currentStudents = new ArrayList<>();
 
@@ -52,14 +51,14 @@ public class GradeManagerPanel extends BaseManagerPanel {
     @Override
     protected void initComponents() {
         setLayout(new BorderLayout());
-        
+
         // --- TOP SELECTION ---
         JPanel pnlTop = new JPanel(new MigLayout("insets 20, fillx", "[][grow]20[]"));
         pnlTop.setBackground(Color.WHITE);
         pnlTop.add(createFieldLabel("Chọn lớp học:"));
         cmbClass = new JComboBox<>();
         pnlTop.add(cmbClass, "grow, height 35");
-        
+
         JButton btnLoad = UIHelper.createStandardButton("Tải danh sách", UIHelper.ACCENT_COLOR, "🔍");
         pnlTop.add(btnLoad, "height 35");
         add(pnlTop, BorderLayout.NORTH);
@@ -69,9 +68,12 @@ public class GradeManagerPanel extends BaseManagerPanel {
         pnlCenter.setOpaque(false);
         pnlCenter.setBorder(new EmptyBorder(20, 20, 20, 20));
 
-        String[] cols = {"ID Học viên", "Họ tên", "Điểm số", "Xếp loại", "Nhận xét"};
+        String[] cols = { "ID Học viên", "Họ tên", "Điểm số", "Xếp loại", "Nhận xét" };
         tableModel = new DefaultTableModel(cols, 0) {
-            @Override public boolean isCellEditable(int r, int c) { return c >= 2; }
+            @Override
+            public boolean isCellEditable(int r, int c) {
+                return c >= 2;
+            }
         };
         tblGrade = new JTable(tableModel);
         setupTable(tblGrade);
@@ -93,7 +95,7 @@ public class GradeManagerPanel extends BaseManagerPanel {
         pnlBottom.add(btnExportPdf);
         pnlBottom.add(btnFinalLock);
         add(pnlBottom, BorderLayout.SOUTH);
-        
+
         btnLoad.addActionListener(e -> loadStudentGrades());
     }
 
@@ -122,21 +124,21 @@ public class GradeManagerPanel extends BaseManagerPanel {
         String comment = tableModel.getValueAt(row, 4).toString();
         ClassEntity selClass = (ClassEntity) cmbClass.getSelectedItem();
 
-        int confirm = JOptionPane.showConfirmDialog(this, 
-            "Gửi điểm cho " + student.getFullName() + " qua email: " + student.getEmail() + "?", 
-            "Xác nhận gửi email", JOptionPane.YES_NO_OPTION);
-            
+        int confirm = JOptionPane.showConfirmDialog(this,
+                "Gửi điểm cho " + student.getFullName() + " qua email: " + student.getEmail() + "?",
+                "Xác nhận gửi email", JOptionPane.YES_NO_OPTION);
+
         if (confirm == JOptionPane.YES_OPTION) {
             try {
                 emailService.sendImmediate(
-                    student.getEmail(),
-                    student.getFullName(),
-                    selClass != null ? selClass.getClassName() : "Lớp học",
-                    score, grade, comment
-                );
+                        student.getEmail(),
+                        student.getFullName(),
+                        selClass != null ? selClass.getClassName() : "Lớp học",
+                        score, grade, comment);
                 JOptionPane.showMessageDialog(this, "Đã gửi email thành công tới: " + student.getEmail());
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, "Lỗi khi gửi email: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Lỗi khi gửi email: " + ex.getMessage(), "Lỗi",
+                        JOptionPane.ERROR_MESSAGE);
                 ex.printStackTrace();
             }
         }
@@ -154,15 +156,14 @@ public class GradeManagerPanel extends BaseManagerPanel {
         if (chooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
             String path = chooser.getSelectedFile().getAbsolutePath();
             ClassEntity selClass = (ClassEntity) cmbClass.getSelectedItem();
-            
+
             pdfService.exportTranscript(
-                path,
-                tableModel.getValueAt(row, 1).toString(),
-                selClass != null ? selClass.getClassName() : "Lớp học",
-                tableModel.getValueAt(row, 2).toString(),
-                tableModel.getValueAt(row, 3).toString(),
-                tableModel.getValueAt(row, 4).toString()
-            );
+                    path,
+                    tableModel.getValueAt(row, 1).toString(),
+                    selClass != null ? selClass.getClassName() : "Lớp học",
+                    tableModel.getValueAt(row, 2).toString(),
+                    tableModel.getValueAt(row, 3).toString(),
+                    tableModel.getValueAt(row, 4).toString());
             JOptionPane.showMessageDialog(this, "Đã xuất PDF thành công tại: " + path);
         }
     }
@@ -173,23 +174,26 @@ public class GradeManagerPanel extends BaseManagerPanel {
 
     private void loadStudentGrades() {
         ClassEntity selClass = (ClassEntity) cmbClass.getSelectedItem();
-        if (selClass == null) return;
+        if (selClass == null)
+            return;
 
         tableModel.setRowCount(0);
         currentStudents.clear();
-        
+
         List<Enrollment> enrollments = enrollmentService.getEnrollmentsByClass(selClass.getClass_id());
         for (Enrollment e : enrollments) {
             Student s = e.getStudent();
             currentStudents.add(s);
             // Mặc định điểm và nhận xét (thực tế nên lấy từ bảng Results)
-            tableModel.addRow(new Object[]{
-                s.getStudent_id(), 
-                s.getFullName(), 
-                "0", "Chưa xếp loại", "..."
+            tableModel.addRow(new Object[] {
+                    s.getStudent_id(),
+                    s.getFullName(),
+                    "0", "Chưa xếp loại", "..."
             });
         }
     }
 
-    @Override protected void loadTableData() {}
+    @Override
+    protected void loadTableData() {
+    }
 }

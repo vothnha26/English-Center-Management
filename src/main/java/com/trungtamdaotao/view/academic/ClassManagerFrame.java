@@ -22,7 +22,6 @@ import com.trungtamdaotao.view.common.BaseManagerFrame;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
@@ -31,10 +30,10 @@ public class ClassManagerFrame extends BaseManagerFrame {
     private final CourseController courseController;
     private final ITeacherDAO teacherDAO;
     private final IRoomDAO roomDAO;
-    
+
     private JTable tblClass;
     private DefaultTableModel tableModel;
-    
+
     // Form fields
     private JTextField txtClassName, txtMaxStudent, txtSearch;
     private DatePicker dpStartDate, dpEndDate;
@@ -42,24 +41,24 @@ public class ClassManagerFrame extends BaseManagerFrame {
     private JComboBox<Teacher> cmbTeacher;
     private JComboBox<Room> cmbRoom;
     private JComboBox<ClassStatus> cmbStatus;
-    
+
     // Buttons
     private JButton btnAdd, btnUpdate, btnDelete, btnClear, btnSearch, btnReload, btnFilterByCourse;
-    
+
     // Selected class for update/delete
     private ClassEntity selectedClass;
-    
+
     private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     public ClassManagerFrame() {
-        super("Quản lý Lớp học", 
-              new AccountRole[]{AccountRole.Admin, AccountRole.Staff}, 
-              new StaffRole[]{StaffRole.MANAGER, StaffRole.CONSULTANT});
+        super("Quản lý Lớp học",
+                new AccountRole[] { AccountRole.Admin, AccountRole.Staff },
+                new StaffRole[] { StaffRole.MANAGER, StaffRole.CONSULTANT });
         this.classController = new ClassController();
         this.courseController = new CourseController();
         this.teacherDAO = new TeacherDAOImpl();
         this.roomDAO = new RoomDAOImpl();
-        
+
         loadComboBoxData();
         loadTableData();
     }
@@ -69,27 +68,27 @@ public class ClassManagerFrame extends BaseManagerFrame {
         // --- Toolbar (NORTH) ---
         JPanel pnlToolbar = new JPanel(new FlowLayout(FlowLayout.LEFT, 15, 10));
         pnlToolbar.setBackground(UIHelper.PRIMARY_COLOR);
-        
+
         JLabel lblSearch = new JLabel("Tìm tên lớp:");
         lblSearch.setForeground(Color.WHITE);
         lblSearch.setFont(UIHelper.BOLD_FONT);
         pnlToolbar.add(lblSearch);
-        
+
         txtSearch = new JTextField(20);
         pnlToolbar.add(txtSearch);
-        
+
         btnSearch = UIHelper.createStandardButton("Tìm", Color.WHITE, "🔍");
         btnSearch.setForeground(UIHelper.PRIMARY_COLOR);
         pnlToolbar.add(btnSearch);
-        
+
         btnFilterByCourse = UIHelper.createStandardButton("Lọc Khóa", Color.WHITE, "📚");
         btnFilterByCourse.setForeground(UIHelper.PRIMARY_COLOR);
         pnlToolbar.add(btnFilterByCourse);
-        
+
         btnReload = UIHelper.createStandardButton("Tải lại", Color.WHITE, "⟳");
         btnReload.setForeground(UIHelper.PRIMARY_COLOR);
         pnlToolbar.add(btnReload);
-        
+
         add(pnlToolbar, BorderLayout.NORTH);
 
         // --- Form (WEST) ---
@@ -102,22 +101,25 @@ public class ClassManagerFrame extends BaseManagerFrame {
 
         int row = 0;
         addFormField(pnlForm, "Tên lớp học: *", txtClassName = new JTextField(), gbc, row++);
-        
-        gbc.gridx = 0; gbc.gridy = row;
+
+        gbc.gridx = 0;
+        gbc.gridy = row;
         pnlForm.add(createFieldLabel("Khóa học: *"), gbc);
         gbc.gridx = 1;
         cmbCourse = new JComboBox<>();
         pnlForm.add(cmbCourse, gbc);
         row++;
 
-        gbc.gridx = 0; gbc.gridy = row;
+        gbc.gridx = 0;
+        gbc.gridy = row;
         pnlForm.add(createFieldLabel("Giáo viên:"), gbc);
         gbc.gridx = 1;
         cmbTeacher = new JComboBox<>();
         pnlForm.add(cmbTeacher, gbc);
         row++;
 
-        gbc.gridx = 0; gbc.gridy = row;
+        gbc.gridx = 0;
+        gbc.gridy = row;
         pnlForm.add(createFieldLabel("Phòng học:"), gbc);
         gbc.gridx = 1;
         cmbRoom = new JComboBox<>();
@@ -125,14 +127,16 @@ public class ClassManagerFrame extends BaseManagerFrame {
         row++;
 
         // DatePickers
-        gbc.gridx = 0; gbc.gridy = row;
+        gbc.gridx = 0;
+        gbc.gridy = row;
         pnlForm.add(createFieldLabel("Ngày bắt đầu:"), gbc);
         gbc.gridx = 1;
         dpStartDate = UIHelper.createDatePicker();
         pnlForm.add(dpStartDate, gbc);
         row++;
 
-        gbc.gridx = 0; gbc.gridy = row;
+        gbc.gridx = 0;
+        gbc.gridy = row;
         pnlForm.add(createFieldLabel("Ngày kết thúc:"), gbc);
         gbc.gridx = 1;
         dpEndDate = UIHelper.createDatePicker();
@@ -141,7 +145,8 @@ public class ClassManagerFrame extends BaseManagerFrame {
 
         addFormField(pnlForm, "Sĩ số tối đa: *", txtMaxStudent = new JTextField(), gbc, row++);
 
-        gbc.gridx = 0; gbc.gridy = row;
+        gbc.gridx = 0;
+        gbc.gridy = row;
         pnlForm.add(createFieldLabel("Trạng thái:"), gbc);
         gbc.gridx = 1;
         cmbStatus = new JComboBox<>(ClassStatus.values());
@@ -152,31 +157,36 @@ public class ClassManagerFrame extends BaseManagerFrame {
         JPanel pnlButtons = new JPanel(new GridLayout(2, 2, 10, 10));
         pnlButtons.setOpaque(false);
         pnlButtons.setBorder(BorderFactory.createEmptyBorder(15, 0, 0, 0));
-        
+
         btnAdd = UIHelper.createStandardButton("Thêm", UIHelper.SUCCESS_COLOR, "✚");
         btnUpdate = UIHelper.createStandardButton("Sửa", UIHelper.WARNING_COLOR, "✎");
         btnDelete = UIHelper.createStandardButton("Xóa", UIHelper.DANGER_COLOR, "✘");
         btnClear = UIHelper.createStandardButton("Mới", UIHelper.PRIMARY_COLOR, "⟲");
-        
+
         pnlButtons.add(btnAdd);
         pnlButtons.add(btnUpdate);
-        
+
         if (UserSession.getPermissions().canDelete()) {
             pnlButtons.add(btnDelete);
         }
-        
+
         pnlButtons.add(btnClear);
-        
-        gbc.gridx = 0; gbc.gridy = row;
+
+        gbc.gridx = 0;
+        gbc.gridy = row;
         gbc.gridwidth = 2;
         pnlForm.add(pnlButtons, gbc);
 
         add(pnlForm, BorderLayout.WEST);
 
         // --- Table (CENTER) ---
-        String[] columns = {"ID", "Tên lớp", "Khóa học", "Giáo viên", "Phòng", "Bắt đầu", "Kết thúc", "Sĩ số", "Trạng thái"};
+        String[] columns = { "ID", "Tên lớp", "Khóa học", "Giáo viên", "Phòng", "Bắt đầu", "Kết thúc", "Sĩ số",
+                "Trạng thái" };
         tableModel = new DefaultTableModel(columns, 0) {
-            @Override public boolean isCellEditable(int r, int c) { return false; }
+            @Override
+            public boolean isCellEditable(int r, int c) {
+                return false;
+            }
         };
         tblClass = new JTable(tableModel);
         setupTable(tblClass);
@@ -184,7 +194,9 @@ public class ClassManagerFrame extends BaseManagerFrame {
     }
 
     private void addFormField(JPanel p, String label, JTextField tf, GridBagConstraints gbc, int r) {
-        gbc.gridx = 0; gbc.gridy = r; gbc.gridwidth = 1;
+        gbc.gridx = 0;
+        gbc.gridy = r;
+        gbc.gridwidth = 1;
         p.add(createFieldLabel(label), gbc);
         gbc.gridx = 1;
         p.add(tf, gbc);
@@ -201,39 +213,45 @@ public class ClassManagerFrame extends BaseManagerFrame {
             btnDelete.addActionListener(e -> deleteClass());
         }
         btnClear.addActionListener(e -> clearForm());
-        
+
         tblClass.getSelectionModel().addListSelectionListener(e -> {
-            if (!e.getValueIsAdjusting()) selectClassFromTable();
+            if (!e.getValueIsAdjusting())
+                selectClassFromTable();
         });
     }
 
     private void loadComboBoxData() {
         List<Course> courses = courseController.getActiveCourses();
         cmbCourse.removeAllItems();
-        for (Course c : courses) cmbCourse.addItem(c);
-        
+        for (Course c : courses)
+            cmbCourse.addItem(c);
+
         List<Teacher> teachers = teacherDAO.findAll();
         cmbTeacher.removeAllItems();
         cmbTeacher.addItem(null);
-        for (Teacher t : teachers) cmbTeacher.addItem(t);
-        
+        for (Teacher t : teachers)
+            cmbTeacher.addItem(t);
+
         List<Room> rooms = roomDAO.findAll();
         cmbRoom.removeAllItems();
         cmbRoom.addItem(null);
-        for (Room r : rooms) cmbRoom.addItem(r);
+        for (Room r : rooms)
+            cmbRoom.addItem(r);
 
         cmbTeacher.setRenderer(new DefaultListCellRenderer() {
             @Override
-            public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected,
+                    boolean cellHasFocus) {
                 super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
                 setText(value == null ? "-- Chưa phân công --" : ((Teacher) value).getFullName());
                 return this;
             }
         });
-        
+
         cmbRoom.setRenderer(new DefaultListCellRenderer() {
             @Override
-            public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected,
+                    boolean cellHasFocus) {
                 super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
                 setText(value == null ? "-- Chưa phân phòng --" : ((Room) value).getRoomName());
                 return this;
@@ -250,9 +268,10 @@ public class ClassManagerFrame extends BaseManagerFrame {
             c.setRoom((Room) cmbRoom.getSelectedItem());
             c.setStartDate(dpStartDate.getDate());
             c.setEndDate(dpEndDate.getDate());
-            if (!txtMaxStudent.getText().isEmpty()) c.setMaxStudent(Integer.parseInt(txtMaxStudent.getText()));
+            if (!txtMaxStudent.getText().isEmpty())
+                c.setMaxStudent(Integer.parseInt(txtMaxStudent.getText()));
             c.setStatus((ClassStatus) cmbStatus.getSelectedItem());
-            
+
             JOptionPane.showMessageDialog(this, classController.createClass(c));
             loadTableData();
             clearForm();
@@ -262,7 +281,8 @@ public class ClassManagerFrame extends BaseManagerFrame {
     }
 
     private void updateClass() {
-        if (selectedClass == null) return;
+        if (selectedClass == null)
+            return;
         try {
             selectedClass.setClassName(txtClassName.getText().trim());
             selectedClass.setCourse((Course) cmbCourse.getSelectedItem());
@@ -270,9 +290,10 @@ public class ClassManagerFrame extends BaseManagerFrame {
             selectedClass.setRoom((Room) cmbRoom.getSelectedItem());
             selectedClass.setStartDate(dpStartDate.getDate());
             selectedClass.setEndDate(dpEndDate.getDate());
-            if (!txtMaxStudent.getText().isEmpty()) selectedClass.setMaxStudent(Integer.parseInt(txtMaxStudent.getText()));
+            if (!txtMaxStudent.getText().isEmpty())
+                selectedClass.setMaxStudent(Integer.parseInt(txtMaxStudent.getText()));
             selectedClass.setStatus((ClassStatus) cmbStatus.getSelectedItem());
-            
+
             JOptionPane.showMessageDialog(this, classController.updateClass(selectedClass));
             loadTableData();
             clearForm();
@@ -282,7 +303,8 @@ public class ClassManagerFrame extends BaseManagerFrame {
     }
 
     private void deleteClass() {
-        if (selectedClass == null) return;
+        if (selectedClass == null)
+            return;
         int confirm = JOptionPane.showConfirmDialog(this, "Xóa lớp " + selectedClass.getClassName() + "?");
         if (confirm == JOptionPane.YES_OPTION) {
             JOptionPane.showMessageDialog(this, classController.deleteClass(selectedClass.getClass_id().intValue()));
@@ -292,10 +314,16 @@ public class ClassManagerFrame extends BaseManagerFrame {
     }
 
     private void clearForm() {
-        txtClassName.setText(""); dpStartDate.clear(); dpEndDate.clear(); txtMaxStudent.setText("");
-        if (cmbCourse.getItemCount() > 0) cmbCourse.setSelectedIndex(0);
-        cmbTeacher.setSelectedIndex(0); cmbRoom.setSelectedIndex(0);
-        cmbStatus.setSelectedIndex(0); selectedClass = null;
+        txtClassName.setText("");
+        dpStartDate.clear();
+        dpEndDate.clear();
+        txtMaxStudent.setText("");
+        if (cmbCourse.getItemCount() > 0)
+            cmbCourse.setSelectedIndex(0);
+        cmbTeacher.setSelectedIndex(0);
+        cmbRoom.setSelectedIndex(0);
+        cmbStatus.setSelectedIndex(0);
+        selectedClass = null;
         tblClass.clearSelection();
     }
 
@@ -306,7 +334,8 @@ public class ClassManagerFrame extends BaseManagerFrame {
             selectedClass = classController.getClassById(id.intValue());
             if (selectedClass != null) {
                 txtClassName.setText(selectedClass.getClassName());
-                if (selectedClass.getCourse() != null) cmbCourse.setSelectedItem(selectedClass.getCourse());
+                if (selectedClass.getCourse() != null)
+                    cmbCourse.setSelectedItem(selectedClass.getCourse());
                 cmbTeacher.setSelectedItem(selectedClass.getTeacher());
                 cmbRoom.setSelectedItem(selectedClass.getRoom());
                 dpStartDate.setDate(selectedClass.getStartDate());
@@ -323,25 +352,27 @@ public class ClassManagerFrame extends BaseManagerFrame {
 
     private void filterByCourse() {
         Course c = (Course) cmbCourse.getSelectedItem();
-        if (c != null) renderTable(classController.getClassesByCourse(c));
+        if (c != null)
+            renderTable(classController.getClassesByCourse(c));
     }
 
     @Override
     protected void loadTableData() {
-        if (classController != null) renderTable(classController.getAllClasses());
+        if (classController != null)
+            renderTable(classController.getAllClasses());
     }
 
     private void renderTable(List<ClassEntity> classes) {
         tableModel.setRowCount(0);
         for (ClassEntity c : classes) {
-            tableModel.addRow(new Object[]{
-                c.getClass_id(), c.getClassName(),
-                c.getCourse() != null ? c.getCourse().getCourseName() : "N/A",
-                c.getTeacher() != null ? c.getTeacher().getFullName() : "Chưa có",
-                c.getRoom() != null ? c.getRoom().getRoomName() : "Chưa có",
-                c.getStartDate(),
-                c.getEndDate(),
-                c.getMaxStudent(), c.getStatus()
+            tableModel.addRow(new Object[] {
+                    c.getClass_id(), c.getClassName(),
+                    c.getCourse() != null ? c.getCourse().getCourseName() : "N/A",
+                    c.getTeacher() != null ? c.getTeacher().getFullName() : "Chưa có",
+                    c.getRoom() != null ? c.getRoom().getRoomName() : "Chưa có",
+                    c.getStartDate(),
+                    c.getEndDate(),
+                    c.getMaxStudent(), c.getStatus()
             });
         }
     }

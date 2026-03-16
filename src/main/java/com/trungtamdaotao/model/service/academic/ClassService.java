@@ -1,6 +1,8 @@
 package com.trungtamdaotao.model.service.academic;
 
 import com.trungtamdaotao.model.dao.academic.IClassDAO;
+import com.trungtamdaotao.model.dao.student.IEnrollmentDAO;
+import com.trungtamdaotao.model.dao.student.impl.EnrollmentDAOImpl;
 import com.trungtamdaotao.model.entity.academic.ClassEntity;
 import com.trungtamdaotao.model.entity.core.Course;
 
@@ -9,9 +11,15 @@ import java.util.stream.Collectors;
 
 public class ClassService {
     private final IClassDAO classDAO;
+    private final IEnrollmentDAO enrollmentDAO;
 
     public ClassService(IClassDAO classDAO) {
+        this(classDAO, new EnrollmentDAOImpl());
+    }
+
+    public ClassService(IClassDAO classDAO, IEnrollmentDAO enrollmentDAO) {
         this.classDAO = classDAO;
+        this.enrollmentDAO = enrollmentDAO;
     }
 
     /**
@@ -85,6 +93,9 @@ public class ClassService {
      * Xóa lớp học
      */
     public void deleteClass(int id) {
+        if (!enrollmentDAO.findByClassId((long) id).isEmpty()) {
+            throw new IllegalStateException("Không thể xóa lớp vì đang có học viên ghi danh. Hãy hủy/điều chuyển ghi danh trước.");
+        }
         classDAO.delete((long) id);
     }
 

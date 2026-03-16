@@ -41,6 +41,13 @@ public class Course {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    @PrePersist
+    protected void onCreate() {
+        if (createdAt == null) {
+            createdAt = LocalDateTime.now();
+        }
+        updatedAt = createdAt;
+    }
     @PreUpdate
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();

@@ -16,9 +16,22 @@ public class EnrollmentDAOImpl extends AbstractDAO<Enrollment> implements IEnrol
     }
 
     @Override
+    public List<Enrollment> findAll() {
+        try (EntityManager em = DbManager.getFactory().createEntityManager()) {
+            String jpql = "SELECT DISTINCT e FROM Enrollment e " +
+                          "JOIN FETCH e.student s " +
+                          "JOIN FETCH e.clazz c";
+            return em.createQuery(jpql, Enrollment.class).getResultList();
+        }
+    }
+
+    @Override
     public List<Enrollment> findByStudentId(Long studentId) {
         try (EntityManager em = DbManager.getFactory().createEntityManager()) {
-            String jpql = "SELECT e FROM Enrollment e WHERE e.student.student_id = :sid";
+            String jpql = "SELECT DISTINCT e FROM Enrollment e " +
+                          "JOIN FETCH e.student s " +
+                          "JOIN FETCH e.clazz c " +
+                          "WHERE s.student_id = :sid";
             return em.createQuery(jpql, Enrollment.class)
                      .setParameter("sid", studentId)
                      .getResultList();
@@ -28,7 +41,10 @@ public class EnrollmentDAOImpl extends AbstractDAO<Enrollment> implements IEnrol
     @Override
     public List<Enrollment> findByClassId(Long classId) {
         try (EntityManager em = DbManager.getFactory().createEntityManager()) {
-            String jpql = "SELECT e FROM Enrollment e WHERE e.clazz.class_id = :cid";
+            String jpql = "SELECT DISTINCT e FROM Enrollment e " +
+                          "JOIN FETCH e.student s " +
+                          "JOIN FETCH e.clazz c " +
+                          "WHERE c.class_id = :cid";
             return em.createQuery(jpql, Enrollment.class)
                      .setParameter("cid", classId)
                      .getResultList();

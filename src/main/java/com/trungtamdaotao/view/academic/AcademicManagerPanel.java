@@ -40,10 +40,12 @@ public class AcademicManagerPanel extends BaseManagerPanel {
     // --- Class Form Fields ---
     private JTextField txtClassName, txtMaxStudent, txtStartDate, txtEndDate;
     private JComboBox<ClassStatus> cmbClassStatus;
+    private JLabel lblSelectedCourseInfo;
 
     // --- Buttons ---
     private JButton btnAddCourse, btnUpdateCourse, btnDeleteCourse;
     private JButton btnAddClass, btnUpdateClass, btnDeleteClass;
+    private JButton btnOpenClassForm;
 
     private Object selectedObject; // Lưu trữ đối tượng đang được chọn thực tế
 
@@ -108,7 +110,8 @@ public class AcademicManagerPanel extends BaseManagerPanel {
         btnAddCourse = UIHelper.createStandardButton("Thêm mới", UIHelper.SUCCESS_COLOR, "➕");
         btnUpdateCourse = UIHelper.createStandardButton("Cập nhật", UIHelper.PRIMARY_COLOR, "📝");
         btnDeleteCourse = UIHelper.createStandardButton("Xóa", Color.RED, "🗑");
-        pnlBtns.add(btnAddCourse); pnlBtns.add(btnUpdateCourse); pnlBtns.add(btnDeleteCourse);
+        btnOpenClassForm = UIHelper.createStandardButton("Thêm lớp cho khóa", UIHelper.SECONDARY_COLOR, "🏫");
+        pnlBtns.add(btnAddCourse); pnlBtns.add(btnUpdateCourse); pnlBtns.add(btnDeleteCourse); pnlBtns.add(btnOpenClassForm);
         p.add(pnlBtns, "span 2, center, gapy 20");
         
         return p;
@@ -121,6 +124,9 @@ public class AcademicManagerPanel extends BaseManagerPanel {
         ((JLabel)p.getComponent(0)).setFont(UIHelper.TITLE_FONT);
         ((JLabel)p.getComponent(0)).setForeground(UIHelper.SECONDARY_COLOR);
 
+        lblSelectedCourseInfo = new JLabel("Khóa học: Chưa chọn");
+        lblSelectedCourseInfo.setFont(UIHelper.BOLD_FONT);
+        p.add(lblSelectedCourseInfo, "span 2, left, gapy 0 10");
         p.add(createFieldLabel("Tên lớp:")); p.add(txtClassName = new JTextField(), "growx, height 35");
         p.add(createFieldLabel("Sĩ số tối đa:")); p.add(txtMaxStudent = new JTextField(), "growx, height 35");
         p.add(createFieldLabel("Ngày bắt đầu:")); p.add(txtStartDate = new JTextField(), "growx, height 35");
@@ -169,9 +175,11 @@ public class AcademicManagerPanel extends BaseManagerPanel {
             selectedObject = node.getUserObject();
             if (selectedObject instanceof Course) {
                 fillCourseForm((Course) selectedObject);
+                updateSelectedCourseInfo((Course) selectedObject);
                 detailLayout.show(pnlDetailContainer, "Course");
             } else if (selectedObject instanceof ClassEntity) {
                 fillClassForm((ClassEntity) selectedObject);
+                updateSelectedCourseInfo(((ClassEntity) selectedObject).getCourse());
                 detailLayout.show(pnlDetailContainer, "Class");
             } else {
                 detailLayout.show(pnlDetailContainer, "Empty");
@@ -212,13 +220,23 @@ public class AcademicManagerPanel extends BaseManagerPanel {
             }
         });
 
+        btnOpenClassForm.addActionListener(e -> {
+            Course selectedCourse = resolveSelectedCourse();
+            if (selectedCourse == null) {
+                JOptionPane.showMessageDialog(this, "Vui lòng chọn khóa học để thêm lớp!");
+                return;
+            }
+            prepareNewClassForm(selectedCourse);
+        });
+
         btnAddClass.addActionListener(e -> {
-            if (!(selectedObject instanceof Course)) {
+            Course selectedCourse = resolveSelectedCourse();
+            if (selectedCourse == null) {
                 JOptionPane.showMessageDialog(this, "Vui lòng chọn khóa học trên cây thư mục để thêm lớp!");
                 return;
             }
             ClassEntity cl = new ClassEntity();
-            cl.setCourse((Course) selectedObject);
+            cl.setCourse(selectedCourse);
             updateClassFromForm(cl);
             String msg = classController.createClass(cl);
             JOptionPane.showMessageDialog(this, msg);
@@ -289,6 +307,51 @@ public class AcademicManagerPanel extends BaseManagerPanel {
         cl.setStatus((ClassStatus) cmbClassStatus.getSelectedItem());
     }
 
+    private void prepareNewClassForm(Course course) {
+        txtClassName.setText("");
+        txtMaxStudent.setText("");
+        txtStartDate.setText("");
+        txtEndDate.setText("");
+        cmbClassStatus.setSelectedItem(ClassStatus.Planned);
+        updateSelectedCourseInfo(course);
+        detailLayout.show(pnlDetailContainer, "Class");
+    }
+
+    private void updateSelectedCourseInfo(Course course) {
+        if (lblSelectedCourseInfo == null) {
+            return;
+        }
+        lblSelectedCourseInfo.setText(course == null ? "Khóa học: Chưa chọn" : "Khóa học: " + course.getCourseName());
+    }
+
+    private Course resolveSelectedCourse() {
+        if (selectedObject instanceof Course) {
+            return (Course) selectedObject;
+        }
+        if (selectedObject instanceof ClassEntity) {
+            return ((ClassEntity) selectedObject).getCourse();
+        }
+
+        DefaultMutableTreeNode node = (DefaultMutableTreeNode) treeAcademic.getLastSelectedPathComponent();
+        if (node == null) {
+            return null;
+        }
+
+        Object userObject = node.getUserObject();
+        if (userObject instanceof Course) {
+            return (Course) userObject;
+        }
+        if (userObject instanceof ClassEntity) {
+            return ((ClassEntity) userObject).getCourse();
+        }
+
+        DefaultMutableTreeNode parentNode = (DefaultMutableTreeNode) node.getParent();
+        if (parentNode != null && parentNode.getUserObject() instanceof Course) {
+            return (Course) parentNode.getUserObject();
+        }
+
+        return null;
+    }
     private void refreshTree() {
         DefaultMutableTreeNode root = new DefaultMutableTreeNode("TRUNG TÂM ANH NGỮ");
         
