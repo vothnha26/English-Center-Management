@@ -26,11 +26,16 @@ public class Teacher {
     private LocalDate hireDate;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "status", length = 20)
     private Status status = Status.Active;
 
     // Getters and Setters
     public Long getTeacher_id() {
         return teacher_id;
+    }
+
+    public void setTeacher_id(Long teacher_id) {
+        this.teacher_id = teacher_id;
     }
 
     public String getFullName() {
@@ -79,5 +84,23 @@ public class Teacher {
 
     public void setStatus(Status status) {
         this.status = status;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        Teacher teacher = (Teacher) obj;
+        return teacher_id != null && teacher_id.equals(teacher.teacher_id);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return fullName;
     }
 }

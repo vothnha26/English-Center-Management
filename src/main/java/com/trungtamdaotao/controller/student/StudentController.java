@@ -3,8 +3,8 @@ package com.trungtamdaotao.controller.student;
 import java.time.LocalDate;
 import java.util.List;
 
-import com.trungtamdaotao.model.dao.impl.EnrollmentDAOImpl;
-import com.trungtamdaotao.model.dao.impl.StudentDAOImpl;
+import com.trungtamdaotao.model.dao.student.impl.EnrollmentDAOImpl;
+import com.trungtamdaotao.model.dao.student.impl.StudentDAOImpl;
 import com.trungtamdaotao.model.entity.academic.ClassEntity;
 import com.trungtamdaotao.model.entity.academic.Enrollment;
 import com.trungtamdaotao.model.entity.core.Student;
@@ -38,13 +38,18 @@ public class StudentController {
         return studentService.search(keyword);
     }
 
-    public Student getStudentById(int id) {
+    public Student getStudentById(Long id) {
         return studentService.findById(id);
     }
 
     public void addStudent(String fullName, String phone, String email,
-                           String address, LocalDate dob) {
+                           String address, LocalDate dob) throws Exception {
         studentService.addStudent(fullName, phone, email, address, dob);
+    }
+
+    public void addStudent(String fullName, String phone, String email,
+                           String address, LocalDate dob, String plainPassword) throws Exception {
+        studentService.addStudent(fullName, phone, email, address, dob, plainPassword);
     }
 
     public void updateStudent(Student student) {
@@ -52,8 +57,19 @@ public class StudentController {
     }
 
     /** Xóa mềm: chuyển trạng thái → Inactive */
-    public void deleteStudent(int id) {
+    public void deleteStudent(Long id) {
         studentService.deactivateStudent(id);
+    }
+
+    /**
+     * Kích hoạt lại hoặc thay đổi trạng thái học viên
+     */
+    public void updateStatus(Long id, com.trungtamdaotao.model.entity.enums.Status status) {
+        Student s = studentService.findById(id);
+        if (s != null) {
+            s.setStatus(status);
+            studentService.updateStudent(s);
+        }
     }
 
     // ─── Ghi danh ──────────────────────────────────────────────────────────────
@@ -62,7 +78,7 @@ public class StudentController {
         enrollmentService.enroll(student, clazz);
     }
 
-    public void cancelEnrollment(int enrollmentId) {
+    public void cancelEnrollment(Long enrollmentId) {
         enrollmentService.cancelEnrollment(enrollmentId);
     }
 
@@ -72,5 +88,21 @@ public class StudentController {
 
     public List<Enrollment> getAllEnrollments() {
         return enrollmentService.getAll();
+    }
+
+    public Enrollment getEnrollmentById(Long id) {
+        return enrollmentService.getAll().stream().filter(e -> e.getEnrollmentId().equals(id)).findFirst().orElse(null);
+    }
+
+    public Enrollment approveEnrollment(Long enrollmentId) {
+        return enrollmentService.approveEnrollment(enrollmentId);
+    }
+
+    public List<Enrollment> getPendingEnrollments() {
+        return enrollmentService.getPendingEnrollments();
+    }
+
+    public List<Enrollment> getEnrollmentsByClass(Long classId) {
+        return enrollmentService.getEnrollmentsByClass(classId);
     }
 }

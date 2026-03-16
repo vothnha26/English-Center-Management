@@ -35,7 +35,8 @@ public class Enrollment {
     @Column(name = "enrollment_date")
     private LocalDate enrollmentDate = LocalDate.now();
 
-    @Enumerated(EnumType.STRING)
+    @Enumerated(EnumType.ORDINAL)
+    @Column(name = "status")
     private EnrollmentStatus status = EnrollmentStatus.Enrolled;
 
     public Enrollment() {}

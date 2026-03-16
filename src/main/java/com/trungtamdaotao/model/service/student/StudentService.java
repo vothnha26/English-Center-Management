@@ -6,14 +6,23 @@ import java.util.stream.Collectors;
 
 import com.trungtamdaotao.model.dao.student.IStudentDAO;
 import com.trungtamdaotao.model.entity.core.Student;
+import com.trungtamdaotao.model.entity.enums.AccountRole;
 import com.trungtamdaotao.model.entity.enums.Status;
+import com.trungtamdaotao.model.service.system.account.RegistrationService;
 
 public class StudentService {
 
     private final IStudentDAO studentDAO;
+    private final RegistrationService registrationService;
 
     public StudentService(IStudentDAO studentDAO) {
         this.studentDAO = studentDAO;
+        this.registrationService = new RegistrationService();
+    }
+
+    public StudentService(IStudentDAO studentDAO, RegistrationService registrationService) {
+        this.studentDAO = studentDAO;
+        this.registrationService = registrationService;
     }
 
     // ─── READ ──────────────────────────────────────────────────────────────────
@@ -35,7 +44,7 @@ public class StudentService {
         return studentDAO.findByNameOrPhone(keyword.trim());
     }
 
-    public Student findById(int id) {
+    public Student findById(Long id) {
         return studentDAO.findById(id);
     }
 
@@ -46,7 +55,15 @@ public class StudentService {
      * @throws IllegalArgumentException nếu thiếu họ tên hoặc số điện thoại
      */
     public void addStudent(String fullName, String phone, String email,
-                           String address, LocalDate dob) {
+                           String address, LocalDate dob) throws Exception {
+        addStudent(fullName, phone, email, address, dob, null);
+    }
+
+    /**
+     * Allow admin to provide an initial password for the created student account.
+     */
+    public void addStudent(String fullName, String phone, String email,
+                           String address, LocalDate dob, String plainPassword) throws Exception {
         if (fullName == null || fullName.isBlank())
             throw new IllegalArgumentException("Họ tên không được để trống.");
         if (phone == null || phone.isBlank())
@@ -59,7 +76,13 @@ public class StudentService {
         s.setAddress(address);
         s.setDateOfBirth(dob);
         s.setRegistrationDate(LocalDate.now());
+        s.setStatus(Status.Active);
         studentDAO.save(s);
+
+        // Tự động tạo account nếu có email
+        if (email != null && !email.isBlank()) {
+            registrationService.registerUser(email, email, AccountRole.Student, acc -> acc.setStudent(s), plainPassword);
+        }
     }
 
     // ─── UPDATE ────────────────────────────────────────────────────────────────
@@ -72,7 +95,7 @@ public class StudentService {
 
     // ─── SOFT DELETE (đặt trạng thái Inactive thay vì xóa thật) ───────────────
 
-    public void deactivateStudent(int id) {
+    public void deactivateStudent(Long id) {
         Student s = studentDAO.findById(id);
         if (s == null) throw new IllegalArgumentException("Không tìm thấy học viên id=" + id);
         s.setStatus(Status.Inactive);

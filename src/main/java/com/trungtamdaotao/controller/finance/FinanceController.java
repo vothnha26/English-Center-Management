@@ -5,8 +5,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
-import com.trungtamdaotao.model.dao.impl.InvoiceDAOImpl;
-import com.trungtamdaotao.model.dao.impl.PaymentDAOImpl;
+import com.trungtamdaotao.model.dao.finance.impl.InvoiceDAOImpl;
+import com.trungtamdaotao.model.dao.finance.impl.PaymentDAOImpl;
 import com.trungtamdaotao.model.entity.core.Student;
 import com.trungtamdaotao.model.entity.enums.InvoiceStatus;
 import com.trungtamdaotao.model.entity.enums.PaymentMethod;
@@ -46,8 +46,26 @@ public class FinanceController {
         return invoiceService.createInvoice(student, amount, note);
     }
 
-    public void cancelInvoice(int invoiceId) {
+    public void cancelInvoice(Long invoiceId) {
         invoiceService.updateStatus(invoiceId, InvoiceStatus.Cancelled);
+    }
+
+    public String deleteInvoice(Long invoiceId) {
+        try {
+            invoiceService.deleteInvoice(invoiceId);
+            return "Xóa hóa đơn thành công!";
+        } catch (Exception e) {
+            return "Lỗi: " + e.getMessage();
+        }
+    }
+
+    public String updateInvoiceStatus(Long invoiceId, InvoiceStatus status) {
+        try {
+            invoiceService.updateStatus(invoiceId, status);
+            return "Cập nhật trạng thái thành công!";
+        } catch (Exception e) {
+            return "Lỗi: " + e.getMessage();
+        }
     }
 
     public List<Invoice> getAllInvoices() {

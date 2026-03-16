@@ -2,7 +2,7 @@ package com.trungtamdaotao.view.student;
 
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
-import java.awt.Frame;
+import java.awt.Window;
 import java.util.List;
 
 import javax.swing.BorderFactory;
@@ -39,8 +39,8 @@ public class EnrollmentDialog extends JDialog {
 
     private static final String[] COLUMNS = {"ID", "Lớp", "Ngày ghi danh", "Trạng thái"};
 
-    public EnrollmentDialog(Frame owner, Student student, StudentController controller) {
-        super(owner, "Ghi danh: " + student.getFullName(), true);
+    public EnrollmentDialog(Window owner, Student student, StudentController controller) {
+        super(owner, "Ghi danh: " + student.getFullName(), ModalityType.APPLICATION_MODAL);
         this.student    = student;
         this.controller = controller;
         initUI();
@@ -103,7 +103,7 @@ public class EnrollmentDialog extends JDialog {
     // Nạp lịch sử ghi danh của học viên
     private void loadEnrollments() {
         tableModel.setRowCount(0);
-        List<Enrollment> list = controller.getEnrollmentsByStudent(student.getStudentId());
+        List<Enrollment> list = controller.getEnrollmentsByStudent(student.getStudent_id());
         for (Enrollment e : list) {
             tableModel.addRow(new Object[]{
                 e.getEnrollmentId(),
@@ -129,7 +129,7 @@ public class EnrollmentDialog extends JDialog {
     private void doCancelEnrollment() {
         int row = tblEnrollments.getSelectedRow();
         if (row < 0) { JOptionPane.showMessageDialog(this, "Vui lòng chọn dòng cần huỷ."); return; }
-        int id = (int) ((long) tableModel.getValueAt(row, 0));
+        Long id = (Long) ((long) tableModel.getValueAt(row, 0));
         int confirm = JOptionPane.showConfirmDialog(this, "Huỷ ghi danh này?", "Xác nhận", JOptionPane.YES_NO_OPTION);
         if (confirm != JOptionPane.YES_OPTION) return;
         try {

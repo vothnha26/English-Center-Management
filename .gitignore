@@ -40,3 +40,8 @@ build/
 
 # File cấu hình hệ thống
 .env
+UI_UX_PROPOSAL.md
+GEMINI.md
+AUTHORIZATION_FLOW.md
+UI_UX_SPEC.md
+NEXT_STEPS.md

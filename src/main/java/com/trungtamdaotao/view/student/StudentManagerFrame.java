@@ -1,269 +1,244 @@
 package com.trungtamdaotao.view.student;
 
-import java.awt.BorderLayout;
-import java.awt.FlowLayout;
-import java.awt.GridLayout;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
-import java.util.List;
-
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.JTextField;
-import javax.swing.ListSelectionModel;
-import javax.swing.SwingUtilities;
-import javax.swing.table.DefaultTableModel;
-
+import com.github.lgooddatepicker.components.DatePicker;
+import com.github.lgooddatepicker.components.DatePickerSettings;
 import com.trungtamdaotao.controller.student.StudentController;
 import com.trungtamdaotao.model.entity.core.Student;
+import com.trungtamdaotao.model.entity.enums.AccountRole;
+import com.trungtamdaotao.model.entity.enums.StaffRole;
+import com.trungtamdaotao.model.entity.enums.Gender;
+import com.trungtamdaotao.model.entity.enums.Status;
+import com.trungtamdaotao.util.UIHelper;
+import com.trungtamdaotao.util.security.UserSession;
+import com.trungtamdaotao.view.common.BaseManagerFrame;
 
-/**
- * Màn hình Quản lý Học viên (CRUD).
- * Layout: thanh tìm kiếm trên đầu, bảng danh sách ở giữa, form nhập liệu bên dưới.
- */
-public class StudentManagerFrame extends JFrame {
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+import java.awt.*;
+import java.time.LocalDate;
+import java.util.List;
 
-    private final StudentController controller;
+public class StudentManagerFrame extends BaseManagerFrame {
 
-    // Bảng danh sách
-    private JTable table;
+    private final StudentController studentController;
+    private JTable tblStudent;
     private DefaultTableModel tableModel;
-
-    // Ô tìm kiếm
-    private JTextField txtSearch;
-
-    // Form nhập liệu
-    private JTextField txtId, txtName, txtPhone, txtEmail, txtAddress, txtDob;
-
-    // Nút hành động
-    private JButton btnAdd, btnUpdate, btnDelete, btnClear, btnSearch, btnEnroll;
-
-    private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-    private static final String[] COLUMNS = {"ID", "Họ tên", "Ngày sinh", "Giới tính",
-                                              "Điện thoại", "Email", "Trạng thái"};
+    
+    // Form fields
+    private JTextField txtFullName, txtPhone, txtEmail, txtAddress, txtSearch;
+    private DatePicker dpDob;
+    private JComboBox<Gender> cmbGender;
+    private JComboBox<Status> cmbStatus;
+    
+    // Buttons
+    private JButton btnAdd, btnUpdate, btnDelete, btnClear, btnSearch, btnReload;
 
     public StudentManagerFrame() {
-        this.controller = new StudentController();
-        initUI();
-        loadTable(controller.getAllStudents());
+        super("Quản lý Học viên", 
+              new AccountRole[]{AccountRole.Admin, AccountRole.Staff}, 
+              new StaffRole[]{StaffRole.MANAGER, StaffRole.CONSULTANT, StaffRole.ACCOUNTANT});
+        this.studentController = new StudentController();
+        loadTableData();
     }
 
-    // ──────────────────────────────────────────────────────────────────────────
-    private void initUI() {
-        setTitle("Quản lý Học viên");
-        setSize(960, 640);
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        setLocationRelativeTo(null);
-        setLayout(new BorderLayout(8, 8));
+    @Override
+    protected void initComponents() {
+        // --- Toolbar (NORTH) ---
+        JPanel pnlToolbar = new JPanel(new FlowLayout(FlowLayout.LEFT, 15, 10));
+        pnlToolbar.setBackground(UIHelper.PRIMARY_COLOR);
+        
+        JLabel lblSearch = new JLabel("Tìm kiếm:");
+        lblSearch.setForeground(Color.WHITE);
+        lblSearch.setFont(UIHelper.BOLD_FONT);
+        pnlToolbar.add(lblSearch);
+        
+        txtSearch = new JTextField(25);
+        pnlToolbar.add(txtSearch);
+        
+        btnSearch = UIHelper.createStandardButton("Tìm", Color.WHITE, "🔍");
+        btnSearch.setForeground(UIHelper.PRIMARY_COLOR);
+        pnlToolbar.add(btnSearch);
+        
+        btnReload = UIHelper.createStandardButton("Tải lại", Color.WHITE, "⟳");
+        btnReload.setForeground(UIHelper.PRIMARY_COLOR);
+        pnlToolbar.add(btnReload);
+        
+        add(pnlToolbar, BorderLayout.NORTH);
 
-        add(buildTopPanel(),    BorderLayout.NORTH);
-        add(buildTablePanel(),  BorderLayout.CENTER);
-        add(buildFormPanel(),   BorderLayout.SOUTH);
-    }
+        // --- Form (WEST) ---
+        JPanel pnlForm = UIHelper.createFormPanel("Thông tin học viên");
+        pnlForm.setPreferredSize(new Dimension(400, 0));
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(8, 8, 8, 8);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.anchor = GridBagConstraints.WEST;
 
-    // ── Top: thanh tìm kiếm ──────────────────────────────────────────────────
-    private JPanel buildTopPanel() {
-        JPanel p = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 6));
-        p.setBorder(BorderFactory.createTitledBorder("Tìm kiếm"));
+        int row = 0;
+        addFormField(pnlForm, "Họ tên:", txtFullName = new JTextField(), gbc, row++);
+        addFormField(pnlForm, "Điện thoại:", txtPhone = new JTextField(), gbc, row++);
+        addFormField(pnlForm, "Email:", txtEmail = new JTextField(), gbc, row++);
+        addFormField(pnlForm, "Địa chỉ:", txtAddress = new JTextField(), gbc, row++);
+        
+        // DatePicker cho Ngày sinh
+        gbc.gridx = 0; gbc.gridy = row;
+        pnlForm.add(createFieldLabel("Ngày sinh:"), gbc);
+        gbc.gridx = 1;
+        dpDob = UIHelper.createDatePicker();
+        pnlForm.add(dpDob, gbc);
+        row++;
+        
+        gbc.gridx = 0; gbc.gridy = row;
+        pnlForm.add(createFieldLabel("Giới tính:"), gbc);
+        gbc.gridx = 1;
+        cmbGender = new JComboBox<>(Gender.values());
+        pnlForm.add(cmbGender, gbc);
+        row++;
 
-        txtSearch = new JTextField(24);
-        btnSearch = new JButton("Tìm");
-        JButton btnReload = new JButton("Tải lại");
+        gbc.gridx = 0; gbc.gridy = row;
+        pnlForm.add(createFieldLabel("Trạng thái:"), gbc);
+        gbc.gridx = 1;
+        cmbStatus = new JComboBox<>(Status.values());
+        pnlForm.add(cmbStatus, gbc);
+        row++;
 
-        btnSearch.addActionListener(e -> doSearch());
-        txtSearch.addActionListener(e -> doSearch());
-        btnReload.addActionListener(e -> loadTable(controller.getAllStudents()));
+        // Buttons Panel
+        JPanel pnlButtons = new JPanel(new GridLayout(2, 2, 10, 10));
+        pnlButtons.setOpaque(false);
+        pnlButtons.setBorder(BorderFactory.createEmptyBorder(20, 0, 0, 0));
+        
+        btnAdd = UIHelper.createStandardButton("Thêm", UIHelper.SUCCESS_COLOR, "✚");
+        btnUpdate = UIHelper.createStandardButton("Sửa", UIHelper.WARNING_COLOR, "✎");
+        btnDelete = UIHelper.createStandardButton("Xóa", UIHelper.DANGER_COLOR, "✘");
+        btnClear = UIHelper.createStandardButton("Mới", UIHelper.PRIMARY_COLOR, "⟲");
+        
+        pnlButtons.add(btnAdd);
+        pnlButtons.add(btnUpdate);
+        if (UserSession.getPermissions().canDelete()) {
+            pnlButtons.add(btnDelete);
+        }
+        pnlButtons.add(btnClear);
+        
+        gbc.gridx = 0; gbc.gridy = row;
+        gbc.gridwidth = 2;
+        pnlForm.add(pnlButtons, gbc);
 
-        p.add(new JLabel("Tên / SĐT:"));
-        p.add(txtSearch);
-        p.add(btnSearch);
-        p.add(btnReload);
-        return p;
-    }
+        add(pnlForm, BorderLayout.WEST);
 
-    // ── Center: bảng JTable ──────────────────────────────────────────────────
-    private JScrollPane buildTablePanel() {
-        tableModel = new DefaultTableModel(COLUMNS, 0) {
+        // --- Table (CENTER) ---
+        String[] columns = {"ID", "Họ tên", "Điện thoại", "Email", "Giới tính", "Ngày sinh", "Trạng thái"};
+        tableModel = new DefaultTableModel(columns, 0) {
             @Override public boolean isCellEditable(int r, int c) { return false; }
         };
-        table = new JTable(tableModel);
-        table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        table.getSelectionModel().addListSelectionListener(e -> {
-            if (!e.getValueIsAdjusting()) populateForm();
+        tblStudent = new JTable(tableModel);
+        setupTable(tblStudent);
+        add(new JScrollPane(tblStudent), BorderLayout.CENTER);
+    }
+
+    private void addFormField(JPanel p, String label, JTextField tf, GridBagConstraints gbc, int r) {
+        gbc.gridx = 0; gbc.gridy = r; gbc.gridwidth = 1;
+        p.add(createFieldLabel(label), gbc);
+        gbc.gridx = 1;
+        p.add(tf, gbc);
+    }
+
+    @Override
+    protected void handleEvents() {
+        btnReload.addActionListener(e -> loadTableData());
+        btnSearch.addActionListener(e -> searchStudents());
+        btnClear.addActionListener(e -> clearForm());
+        
+        btnAdd.addActionListener(e -> {
+            try {
+                studentController.addStudent(
+                    txtFullName.getText(), txtPhone.getText(), txtEmail.getText(),
+                    txtAddress.getText(), dpDob.getDate()
+                );
+                loadTableData();
+                clearForm();
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Lỗi: " + ex.getMessage());
+            }
         });
-        table.getColumnModel().getColumn(0).setMaxWidth(50);
-        return new JScrollPane(table);
+
+        btnUpdate.addActionListener(e -> {
+            int row = tblStudent.getSelectedRow();
+            if (row < 0) return;
+            try {
+                Long id = (Long) tableModel.getValueAt(row, 0);
+                Student s = studentController.getStudentById(id);
+                s.setFullName(txtFullName.getText());
+                s.setPhone(txtPhone.getText());
+                s.setEmail(txtEmail.getText());
+                s.setAddress(txtAddress.getText());
+                s.setDateOfBirth(dpDob.getDate());
+                s.setGender((Gender) cmbGender.getSelectedItem());
+                s.setStatus((Status) cmbStatus.getSelectedItem());
+                studentController.updateStudent(s);
+                loadTableData();
+                JOptionPane.showMessageDialog(this, "Cập nhật thành công!");
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Lỗi: " + ex.getMessage());
+            }
+        });
+
+        if (UserSession.getPermissions().canDelete()) {
+            btnDelete.addActionListener(e -> {
+                int row = tblStudent.getSelectedRow();
+                if (row < 0) return;
+                if (JOptionPane.showConfirmDialog(this, "Xác nhận xóa?") == JOptionPane.YES_OPTION) {
+                    studentController.deleteStudent((Long) tableModel.getValueAt(row, 0));
+                    loadTableData();
+                    clearForm();
+                }
+            });
+        }
+
+        tblStudent.getSelectionModel().addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) fillForm();
+        });
     }
 
-    // ── South: form nhập liệu + nút ──────────────────────────────────────────
-    private JPanel buildFormPanel() {
-        JPanel wrapper = new JPanel(new BorderLayout(4, 4));
-        wrapper.setBorder(BorderFactory.createTitledBorder("Thông tin học viên"));
-
-        // Lưới nhập liệu
-        JPanel grid = new JPanel(new GridLayout(2, 6, 6, 4));
-        txtId      = new JTextField(); txtId.setEditable(false);
-        txtName    = new JTextField();
-        txtPhone   = new JTextField();
-        txtEmail   = new JTextField();
-        txtAddress = new JTextField();
-        txtDob     = new JTextField("dd/MM/yyyy");
-
-        grid.add(label("ID:")); grid.add(txtId);
-        grid.add(label("Họ tên (*):"));   grid.add(txtName);
-        grid.add(label("Điện thoại (*):")); grid.add(txtPhone);
-        grid.add(label("Email:"));         grid.add(txtEmail);
-        grid.add(label("Địa chỉ:"));      grid.add(txtAddress);
-        grid.add(label("Ngày sinh:"));     grid.add(txtDob);
-
-        // Nút hành động
-        JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 4));
-        btnAdd    = new JButton("➕ Thêm");
-        btnUpdate = new JButton("✏ Cập nhật");
-        btnDelete = new JButton("🗑 Xóa (Inactive)");
-        btnClear  = new JButton("⬜ Xóa form");
-        btnEnroll = new JButton("📋 Ghi danh lớp học");
-
-        btnAdd.addActionListener(e    -> doAdd());
-        btnUpdate.addActionListener(e -> doUpdate());
-        btnDelete.addActionListener(e -> doDelete());
-        btnClear.addActionListener(e  -> clearForm());
-        btnEnroll.addActionListener(e -> openEnrollDialog());
-
-        btnPanel.add(btnAdd); btnPanel.add(btnUpdate);
-        btnPanel.add(btnDelete); btnPanel.add(btnEnroll);
-        btnPanel.add(btnClear);
-
-        wrapper.add(grid, BorderLayout.CENTER);
-        wrapper.add(btnPanel, BorderLayout.SOUTH);
-        return wrapper;
+    @Override
+    protected void loadTableData() {
+        if (studentController == null) return;
+        List<Student> list = studentController.getAllStudents();
+        renderTable(list);
     }
 
-    // ──────────────────────────────────────────────────────────────────────────
-    // Nạp dữ liệu vào bảng
-    private void loadTable(List<Student> list) {
+    private void renderTable(List<Student> list) {
         tableModel.setRowCount(0);
         for (Student s : list) {
             tableModel.addRow(new Object[]{
-                s.getStudentId(),
-                s.getFullName(),
-                s.getDateOfBirth() != null ? s.getDateOfBirth().format(DATE_FMT) : "",
-                s.getGender(),
-                s.getPhone(),
-                s.getEmail(),
-                s.getStatus()
+                s.getStudent_id(), s.getFullName(), s.getPhone(), s.getEmail(),
+                s.getGender(), s.getDateOfBirth(), s.getStatus()
             });
         }
     }
 
-    // Chọn hàng → điền vào form
-    private void populateForm() {
-        int row = table.getSelectedRow();
-        if (row < 0) return;
-        txtId.setText(tableModel.getValueAt(row, 0).toString());
-        txtName.setText(tableModel.getValueAt(row, 1).toString());
-        Object dob = tableModel.getValueAt(row, 2);
-        txtDob.setText(dob != null ? dob.toString() : "");
-        txtPhone.setText(tableModel.getValueAt(row, 4).toString());
-        Object email = tableModel.getValueAt(row, 5);
-        txtEmail.setText(email != null ? email.toString() : "");
+    private void searchStudents() {
+        String kw = txtSearch.getText();
+        renderTable(studentController.searchStudents(kw));
     }
 
-    // ── Hành động CRUD ───────────────────────────────────────────────────────
-
-    private void doSearch() {
-        loadTable(controller.searchStudents(txtSearch.getText()));
-    }
-
-    private void doAdd() {
-        try {
-            LocalDate dob = parseDob();
-            controller.addStudent(txtName.getText(), txtPhone.getText(),
-                                  txtEmail.getText(), txtAddress.getText(), dob);
-            JOptionPane.showMessageDialog(this, "Thêm học viên thành công!");
-            clearForm();
-            loadTable(controller.getAllStudents());
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
-        }
-    }
-
-    private void doUpdate() {
-        if (txtId.getText().isBlank()) {
-            JOptionPane.showMessageDialog(this, "Vui lòng chọn học viên cần cập nhật.");
-            return;
-        }
-        try {
-            int id = Integer.parseInt(txtId.getText());
-            Student s = controller.getStudentById(id);
-            if (s == null) { JOptionPane.showMessageDialog(this, "Không tìm thấy học viên."); return; }
-
-            s.setFullName(txtName.getText());
-            s.setPhone(txtPhone.getText());
-            s.setEmail(txtEmail.getText());
-            s.setAddress(txtAddress.getText());
-            s.setDateOfBirth(parseDob());
-            controller.updateStudent(s);
-            JOptionPane.showMessageDialog(this, "Cập nhật thành công!");
-            loadTable(controller.getAllStudents());
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
-        }
-    }
-
-    private void doDelete() {
-        if (txtId.getText().isBlank()) {
-            JOptionPane.showMessageDialog(this, "Vui lòng chọn học viên muốn xóa.");
-            return;
-        }
-        int confirm = JOptionPane.showConfirmDialog(this,
-                "Học viên sẽ bị đặt Inactive. Tiếp tục?", "Xác nhận", JOptionPane.YES_NO_OPTION);
-        if (confirm != JOptionPane.YES_OPTION) return;
-        try {
-            controller.deleteStudent(Integer.parseInt(txtId.getText()));
-            JOptionPane.showMessageDialog(this, "Đã đặt trạng thái Inactive.");
-            clearForm();
-            loadTable(controller.getAllStudents());
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
-        }
-    }
-
-    private void openEnrollDialog() {
-        if (txtId.getText().isBlank()) {
-            JOptionPane.showMessageDialog(this, "Vui lòng chọn học viên trước.");
-            return;
-        }
-        int id = Integer.parseInt(txtId.getText());
-        Student student = controller.getStudentById(id);
-        if (student != null) {
-            new EnrollmentDialog(this, student, controller).setVisible(true);
+    private void fillForm() {
+        int row = tblStudent.getSelectedRow();
+        if (row >= 0) {
+            txtFullName.setText(tableModel.getValueAt(row, 1).toString());
+            txtPhone.setText(tableModel.getValueAt(row, 2).toString());
+            txtEmail.setText(tableModel.getValueAt(row, 3).toString());
+            cmbGender.setSelectedItem(tableModel.getValueAt(row, 4));
+            dpDob.setDate((LocalDate) tableModel.getValueAt(row, 5));
+            cmbStatus.setSelectedItem(tableModel.getValueAt(row, 6));
         }
     }
 
     private void clearForm() {
-        txtId.setText(""); txtName.setText(""); txtPhone.setText("");
-        txtEmail.setText(""); txtAddress.setText(""); txtDob.setText("dd/MM/yyyy");
-        table.clearSelection();
+        txtFullName.setText(""); txtPhone.setText(""); txtEmail.setText("");
+        txtAddress.setText(""); dpDob.clear(); txtSearch.setText("");
+        cmbGender.setSelectedIndex(0); cmbStatus.setSelectedIndex(0);
+        tblStudent.clearSelection();
     }
 
-    private LocalDate parseDob() {
-        String raw = txtDob.getText().trim();
-        if (raw.isEmpty() || raw.equals("dd/MM/yyyy")) return null;
-        try { return LocalDate.parse(raw, DATE_FMT); }
-        catch (DateTimeParseException e) { throw new IllegalArgumentException("Ngày sinh sai định dạng dd/MM/yyyy"); }
-    }
-
-    private JLabel label(String text) { return new JLabel(text); }
-
-    // ── Entry point (standalone test) ────────────────────────────────────────
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> new StudentManagerFrame().setVisible(true));
     }

@@ -3,6 +3,7 @@ package com.trungtamdaotao.model.entity.system;
 import jakarta.persistence.*;
 import com.trungtamdaotao.model.entity.enums.Status;
 import com.trungtamdaotao.model.entity.enums.StaffRole;
+import com.trungtamdaotao.model.dao.StaffRoleConverter;
 
 @Entity
 @Table(name = "staffs")
@@ -14,7 +15,7 @@ public class Staff {
     @Column(name = "full_name", nullable = false)
     private String fullName;
 
-    @Enumerated(EnumType.STRING) // QUAN TRỌNG: Thêm dòng này
+    @Convert(converter = StaffRoleConverter.class)
     @Column(name = "role")
     private StaffRole role;
 
@@ -25,9 +26,15 @@ public class Staff {
     @Column(name = "status")
     private Status status;
 
-    // Getters và Setters (Bắt buộc để Hibernate hoạt động)
+    public Staff() {}
+
+    // Getters and Setters
     public Long getStaff_id() {
         return staff_id;
+    }
+
+    public void setStaff_id(Long staff_id) {
+        this.staff_id = staff_id;
     }
 
     public String getFullName() {

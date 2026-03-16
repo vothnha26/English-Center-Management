@@ -35,11 +35,15 @@ public class InvoiceService {
     }
 
     /** Cập nhật trạng thái hóa đơn (Issued → Paid hoặc Cancelled) */
-    public void updateStatus(int invoiceId, InvoiceStatus newStatus) {
+    public void updateStatus(Long invoiceId, InvoiceStatus newStatus) {
         Invoice inv = invoiceDAO.findById(invoiceId);
         if (inv == null) throw new IllegalArgumentException("Không tìm thấy hóa đơn id=" + invoiceId);
         inv.setStatus(newStatus);
         invoiceDAO.update(inv);
+    }
+
+    public void deleteInvoice(Long invoiceId) {
+        invoiceDAO.delete(invoiceId);
     }
 
     public List<Invoice> getAll() {

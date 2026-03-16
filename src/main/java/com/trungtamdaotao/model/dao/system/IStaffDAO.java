@@ -1,10 +1,11 @@
 package com.trungtamdaotao.model.dao.system;
 
+import java.util.List;
+
 import com.trungtamdaotao.model.dao.IGenericDAO;
 import com.trungtamdaotao.model.entity.system.Staff;
 
-import java.util.List;
-
 public interface IStaffDAO extends IGenericDAO<Staff> {
-    List<Staff> findByRole(String role);
+    /** Tìm staff theo tên hoặc số điện thoại */
+    List<Staff> findByNameOrPhone(String keyword);
 }
